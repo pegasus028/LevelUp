@@ -375,6 +375,9 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .seg{border-radius:5px;padding:1px 3px;cursor:pointer;transition:background .15s,box-shadow .15s;}
 .seg.seg-v{background:var(--gold-wash);box-shadow:inset 0 -2px 0 var(--gold);}
 .seg.seg-g{background:var(--accent-wash);box-shadow:inset 0 -2px 0 var(--accent-soft);}
+/* a vocab swap nested inside a grammar (sentence) upgrade */
+.seg.seg-g .seg.seg-v{background:rgba(255,255,255,.65);box-shadow:inset 0 -2px 0 var(--gold);}
+.seg.seg-g .seg.seg-v.lit{background:var(--gold);box-shadow:0 0 0 2px var(--gold);}
 .seg.lit{background:var(--gold);color:#fff;box-shadow:0 0 0 2px var(--gold);}
 .seg.seg-g.lit{background:var(--accent);box-shadow:0 0 0 2px var(--accent);}
 .seg.pinned{outline:2px dashed var(--ink-soft);outline-offset:1px;}
@@ -1139,17 +1142,19 @@ function renderUpgrades(){
   // panes are identical everywhere except at the swapped spans, every swap is
   // shown, paired, and is — by definition — in a table.
   const origPlain = stripMarkers(u.originalAnnotated) || current.essay || '';
-  const edits = vocabRows().concat(grammarRows())
-                  .map(x => ({ id:x.id, original:x.original, replacement:x.replacement, marked:x.marked }))
-                  .filter(x => x.id && x.original && x.replacement && x.marked !== false &&
-                               x.original.trim().toLowerCase() !== x.replacement.trim().toLowerCase());
-  const pair = buildPairFromEdits(origPlain, edits);
+  const mkEdit = x => ({ id:x.id, original:x.original, replacement:x.replacement, marked:x.marked });
+  const keep = x => x.id && x.original && x.replacement && x.marked !== false &&
+                    x.original.trim().toLowerCase() !== x.replacement.trim().toLowerCase();
+  const vocabEdits   = vocabRows().map(mkEdit).filter(keep);
+  const grammarEdits = grammarRows().map(mkEdit).filter(keep);
+  const pair = buildUpgradeView(origPlain, vocabEdits, grammarEdits);
 
   $('orig-body').innerHTML = annotatedToHtml(pair.original);
   $('upg-body').innerHTML  = annotatedToHtml(pair.upgraded);
   // expose the clean upgraded text (for copy) and show how many swaps were applied
   upgradedPlainText = stripMarkers(pair.upgraded);
-  const applied = edits.length - pair.unmatched.length;
+  const total = vocabEdits.length + grammarEdits.length;
+  const applied = total - pair.unmatched.length;
   const cnt = $('up-count');
   if (cnt) cnt.textContent = applied + (applied === 1 ? ' upgrade' : ' upgrades');
   // Flag (for the teacher) any catalogued swap whose text wasn't found verbatim
@@ -1178,30 +1183,75 @@ function renderUpgrades(){
   });
 })();
 
-/* Rebuild both panes from the student's text + the list of swaps.
- * - locates each swap's `original` as a verbatim span (non-overlapping, longer
- *   spans win so a grammar clause beats a vocab word nested inside it)
- * - emits the SAME text everywhere except inside a swap, where the original pane
- *   shows the original span and the upgraded pane shows the replacement, both
- *   wrapped in the same [[id]] marker → guaranteed identical-except-swaps + paired
+/* Rebuild both panes from the student's text + the swaps, supporting a vocab
+ * swap NESTED inside a grammar (sentence/clause) upgrade. Grammar spans form the
+ * outer layer; vocab swaps either sit in untouched ("plain") text or inside a
+ * grammar span. The two panes are identical except inside swap spans, every swap
+ * is wrapped in its own [[id]] marker (nested where applicable) so all are shown
+ * and paired, and a nested word legitimately appears in both tables.
  * Returns { original, upgraded, unmatched:[originals not found] }. */
-function buildPairFromEdits(origPlain, edits){
-  const m = collectMatches(origPlain, edits, 'original');   // id -> {s,e}, non-overlapping
-  const placed = edits.filter(e => m[e.id]).sort((x,y) => m[x.id].s - m[y.id].s);
-  const unmatched = edits.filter(e => !m[e.id]).map(e => e.original);
-  let oOut = '', uOut = '', cur = 0;
-  placed.forEach(e => {
-    const sp = m[e.id];
-    if (sp.s < cur) return;                       // safety: skip any residual overlap
-    const between = origPlain.slice(cur, sp.s);
-    oOut += between; uOut += between;
-    oOut += '[[' + e.id + ']]' + origPlain.slice(sp.s, sp.e) + '[[/' + e.id + ']]';
-    uOut += '[[' + e.id + ']]' + e.replacement + '[[/' + e.id + ']]';
-    cur = sp.e;
+function buildUpgradeView(origPlain, vocabEdits, grammarEdits){
+  const unmatched = [];
+  // 1) place grammar spans (non-overlapping, longest-first), ordered by position
+  const gM = collectMatches(origPlain, grammarEdits, 'original');
+  grammarEdits.forEach(g => { if (!gM[g.id]) unmatched.push(g.original); });
+  const regions = grammarEdits.filter(g => gM[g.id])
+                    .map(g => ({ id:g.id, s:gM[g.id].s, e:gM[g.id].e, replacement:g.replacement }))
+                    .sort((a,b) => a.s - b.s);
+  const inRegion = (vs,ve) => regions.find(r => vs >= r.s && ve <= r.e);
+  const straddles = (vs,ve) => regions.find(r => (vs < r.e && ve > r.s) && !(vs >= r.s && ve <= r.e));
+
+  // 2) locate vocab originals; classify as top-level (in plain text) or nested
+  const vM = collectMatches(origPlain, vocabEdits, 'original');
+  const topVocab = [];                 // {id, vs, ve, replacement}
+  const nestedByRegion = {};           // regionId -> [vocabEdit]
+  vocabEdits.forEach(v => {
+    const sp = vM[v.id];
+    if (!sp){ unmatched.push(v.original); return; }
+    if (straddles(sp.s, sp.e)){ unmatched.push(v.original); return; }
+    const reg = inRegion(sp.s, sp.e);
+    if (reg){ (nestedByRegion[reg.id] = nestedByRegion[reg.id] || []).push(v); }
+    else { topVocab.push({ id:v.id, vs:sp.s, ve:sp.e, replacement:v.replacement }); }
   });
-  oOut += origPlain.slice(cur);
-  uOut += origPlain.slice(cur);
+
+  // 3) walk origPlain, emitting plain runs (with top-level vocab) and grammar regions
+  let oOut = '', uOut = '', cur = 0;
+  const emitPlain = (s, e) => {
+    const vs = topVocab.filter(v => v.vs >= s && v.ve <= e).sort((a,b) => a.vs - b.vs);
+    let c = s;
+    vs.forEach(v => {
+      if (v.vs < c) return;
+      const between = origPlain.slice(c, v.vs);
+      oOut += between; uOut += between;
+      oOut += '[[' + v.id + ']]' + origPlain.slice(v.vs, v.ve) + '[[/' + v.id + ']]';
+      uOut += '[[' + v.id + ']]' + v.replacement + '[[/' + v.id + ']]';
+      c = v.ve;
+    });
+    const tail = origPlain.slice(c, e);
+    oOut += tail; uOut += tail;
+  };
+  regions.forEach(r => {
+    if (r.s > cur) emitPlain(cur, r.s);
+    const nested = nestedByRegion[r.id] || [];
+    const origText = origPlain.slice(r.s, r.e);
+    oOut += '[[' + r.id + ']]' + nestVocab(origText, nested, false) + '[[/' + r.id + ']]';
+    uOut += '[[' + r.id + ']]' + nestVocab(r.replacement, nested, true) + '[[/' + r.id + ']]';
+    cur = r.e;
+  });
+  if (cur < origPlain.length) emitPlain(cur, origPlain.length);
   return { original:oOut, upgraded:uOut, unmatched:unmatched };
+}
+// Wrap nested vocab words inside a region's text. useRepl picks the replacement
+// word (for the upgraded side) or the original word (for the original side).
+function nestVocab(text, nested, useRepl){
+  if (!nested || !nested.length) return text;
+  const items = nested.map(v => ({ id:v.id, needle: (useRepl ? v.replacement : v.original) }));
+  const m = collectMatches(text, items, 'needle');
+  const placed = items.filter(it => m[it.id]).map(it => ({ id:it.id, s:m[it.id].s, e:m[it.id].e })).sort((a,b) => a.s - b.s);
+  let out = '', cur = 0;
+  placed.forEach(p => { if (p.s < cur) return; out += text.slice(cur, p.s) + '[[' + p.id + ']]' + text.slice(p.s, p.e) + '[[/' + p.id + ']]'; cur = p.e; });
+  out += text.slice(cur);
+  return out;
 }
 
 function stripMarkers(text){ return String(text||'').replace(/\[\[\/?(?:V|G)\d+x?\]\]/g, ''); }
@@ -1462,31 +1512,39 @@ async function triggerUpgrade(level){
   upgradeBusy = false;
 }
 // [[V1]]text[[/V1]] → <span class="seg seg-v" data-id="V1">text</span>; strips orphan markers.
+// Parse [[id]]…[[/id]] markers (which MAY nest) into nested <span class="seg">.
 function annotatedToHtml(text){
   text = String(text||'');
-  let html = '', last = 0;
-  const re = /\[\[(V|G)(\d+x?)\]\]([\s\S]*?)\[\[\/\1\2\]\]/g;
-  let mt;
-  while ((mt = re.exec(text)) !== null){
-    html += esc(text.slice(last, mt.index));
-    const id = mt[1] + mt[2];
-    const cls = mt[1] === 'V' ? 'seg-v' : 'seg-g';
-    html += '<span class="seg '+cls+'" data-id="'+id+'" tabindex="0">'+esc(mt[3])+'</span>';
+  const re = /\[\[(\/?)(V|G)(\d+x?)\]\]/g;
+  let out = '', last = 0, m;
+  const stack = [];
+  while ((m = re.exec(text)) !== null){
+    out += esc(text.slice(last, m.index));
     last = re.lastIndex;
+    const id = m[2] + m[3];
+    if (m[1] === '/'){
+      if (stack.length && stack[stack.length-1] === id){ out += '</span>'; stack.pop(); }
+      // mismatched close → ignore
+    } else {
+      out += '<span class="seg '+(m[2]==='V'?'seg-v':'seg-g')+'" data-id="'+id+'" tabindex="0">';
+      stack.push(id);
+    }
   }
-  html += esc(text.slice(last));
-  return html.replace(/\[\[\/?(?:V|G)\d+x?\]\]/g, '');   // any stray unpaired markers
+  out += esc(text.slice(last));
+  while (stack.length){ out += '</span>'; stack.pop(); }   // safety close
+  return out;
 }
 function bindSegEvents(pane, otherPane){
   pane.querySelectorAll('.seg').forEach(seg => {
-    seg.addEventListener('mouseenter', () => { if (!pinnedId) light(seg.dataset.id, otherPane, false); });
+    seg.addEventListener('mouseenter', e => { e.stopPropagation(); if (!pinnedId) light(seg.dataset.id, otherPane, false); });
     seg.addEventListener('mouseleave', () => { if (!pinnedId) unlightAll(); });
-    seg.addEventListener('click', () => {
+    seg.addEventListener('click', e => {
+      e.stopPropagation();                    // innermost nested span wins
       if (pinnedId === seg.dataset.id){ pinnedId = null; unlightAll(); $('detail-card').classList.remove('show'); return; }
       pinnedId = seg.dataset.id;
       light(seg.dataset.id, otherPane, true);
     });
-    seg.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); seg.click(); } });
+    seg.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); seg.click(); } });
   });
 }
 function light(id, otherPane, pin){
