@@ -367,6 +367,9 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .essay-pane{background:#fff;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-height:300px;}
 .essay-pane .ep-head{padding:12px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;background:var(--paper);border-radius:12px 12px 0 0;}
 .up-count{font-size:.74rem;font-weight:700;color:var(--accent);background:var(--accent-wash);border:1px solid #f0d3c4;border-radius:20px;padding:2px 10px;white-space:nowrap;}
+.up-verify{font-size:.74rem;font-weight:700;border-radius:20px;padding:2px 10px;white-space:nowrap;}
+.up-verify.ok{color:#2f6b34;background:#e9f5ea;border:1px solid #bfe0c2;}
+.up-verify.warn{color:#8a5a00;background:#fdf3e2;border:1px solid #f0dcb0;}
 .ghost.mini{padding:4px 10px;font-size:.78rem;min-height:0;}
 .essay-pane .ep-title{font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);}
 .essay-pane .ep-lv{font-size:.8rem;color:#fff;background:var(--ink-soft);border-radius:7px;padding:2px 10px;font-weight:600;}
@@ -567,6 +570,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
             <span class="ep-title">Upgraded to:</span>
             <div class="cefr-row" id="upg-cefr-row"></div>
             <span class="up-count" id="up-count"></span>
+            <span class="up-verify" id="upg-verify" style="display:none"></span>
             <button class="ghost mini" type="button" id="upg-copy" title="Copy the upgraded text">📋 Copy</button>
           </div>
           <div class="essay-body" id="upg-body"></div>
@@ -1157,6 +1161,14 @@ function renderUpgrades(){
   const applied = total - pair.unmatched.length;
   const cnt = $('up-count');
   if (cnt) cnt.textContent = applied + (applied === 1 ? ' upgrade' : ' upgrades');
+  // C1/C2 quality-check result (only present for verified higher-level uplifts)
+  const vb = $('upg-verify');
+  if (vb){
+    const cb = u.checkedBand, mt = u.meetsTarget;
+    if (cb && mt){ vb.style.display=''; vb.className='up-verify ok'; vb.textContent = '✓ verified at ' + cb; }
+    else if (cb && !IS_STUDENT){ vb.style.display=''; vb.className='up-verify warn'; vb.textContent = '⚠ reads ~' + cb + ' — may need polish'; }
+    else { vb.style.display='none'; }
+  }
   // Flag (for the teacher) any catalogued swap whose text wasn't found verbatim
   // in the student response, so it can be corrected rather than silently missed.
   const note = $('upg-missing');
