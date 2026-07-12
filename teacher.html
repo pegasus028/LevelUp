@@ -418,6 +418,63 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .hist-item{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:.9rem;flex-wrap:wrap;}
 .hist-item .hmeta{color:var(--ink-faint);font-size:.82rem;}
 
+/* ===== security & new-feature additions ===== */
+.who-chip{font-size:.8rem;font-weight:600;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line-strong);border-radius:16px;padding:5px 13px;white-space:nowrap;}
+.login-note{font-size:.82rem;color:var(--ink-faint);margin-top:14px;}
+.rp-turns{font-size:.78rem;font-weight:600;color:var(--ink-faint);background:#fff;border:1px solid var(--line);border-radius:14px;padding:3px 10px;}
+.rp-safety{font-size:.76rem;color:var(--ink-faint);margin:8px 2px 0;}
+.rp-support{background:#fdf3f2;border:1.5px solid #f2c9c4;border-radius:12px;padding:12px 15px;font-size:.92rem;color:#8a3b32;margin-bottom:10px;line-height:1.55;}
+
+/* progress strip */
+.prog-pane{display:flex;gap:22px;flex-wrap:wrap;align-items:stretch;}
+.prog-chart{flex:1;min-width:260px;}
+.prog-chart svg{width:100%;height:120px;display:block;}
+.prog-deltas{display:flex;flex-direction:column;gap:7px;justify-content:center;min-width:190px;}
+.prog-delta{display:flex;justify-content:space-between;gap:12px;font-size:.84rem;color:var(--ink-soft);}
+.prog-delta b.upd{color:var(--good);} .prog-delta b.dnd{color:var(--danger);} .prog-delta b.same{color:var(--ink-faint);}
+
+/* practice gym */
+.pr-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:16px;}
+.pr-topic{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);background:var(--gold-wash);border:1px solid var(--gold-soft);border-radius:8px;padding:3px 10px;margin-bottom:10px;}
+.pr-orig{font-family:"Newsreader",Georgia,serif;font-size:1.08rem;color:var(--ink);background:var(--paper);border-left:3px solid var(--line-strong);border-radius:8px;padding:12px 15px;margin-bottom:14px;}
+.pr-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.pr-row textarea{flex:1;min-width:240px;min-height:64px;font-family:"Inter",sans-serif;font-size:.96rem;}
+.pr-result{margin-top:14px;border-radius:12px;padding:14px 16px;font-size:.93rem;line-height:1.55;display:none;}
+.pr-result.show{display:block;}
+.pr-result.good{background:#f0f7ee;border:1.5px solid #cfe3c8;}
+.pr-result.bad{background:#fdf6ec;border:1.5px solid #f0d9b5;}
+.pr-badge{display:inline-block;font-weight:700;font-size:.8rem;border-radius:8px;padding:2px 10px;margin-left:8px;color:#fff;background:var(--gold);}
+.pr-hud{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+.pr-streak{font-family:"Fraunces",serif;font-weight:600;font-size:1.15rem;color:var(--accent);}
+.pr-nav{display:flex;gap:8px;margin-top:14px;}
+.pr-better{margin-top:10px;background:#fff;border:1.5px dashed var(--gold-soft);border-radius:10px;padding:10px 13px;font-family:"Newsreader",Georgia,serif;}
+
+/* mastery dots */
+.mdots{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle;}
+.mdot{width:8px;height:8px;border-radius:50%;background:var(--line-strong);}
+.mdot.on{background:var(--good);}
+
+/* class tab */
+.cls-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0;}
+.cls-stat{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center;}
+.cls-stat .big{font-family:"Fraunces",serif;font-size:1.5rem;font-weight:600;color:var(--accent);}
+.cls-stat .lbl{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-top:2px;}
+.roster-table{width:100%;border-collapse:collapse;font-size:.9rem;}
+.roster-table th{text-align:left;padding:9px 10px;border-bottom:2px solid var(--line-strong);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);}
+.roster-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+.code-chip{font-family:ui-monospace,Menlo,monospace;font-weight:700;letter-spacing:.06em;background:var(--gold-wash);border:1px solid var(--gold-soft);border-radius:8px;padding:3px 9px;cursor:pointer;}
+.code-chip:hover{background:var(--gold-soft);}
+.roster-table .off td{opacity:.45;}
+.trend-up{color:var(--good);font-weight:700;} .trend-dn{color:var(--danger);font-weight:700;}
+.issue-card{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:12px 15px;margin-bottom:9px;font-size:.9rem;}
+.issue-card .cnt{float:right;font-weight:700;color:var(--accent);}
+.tgt-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
+.tgt-card h4{margin:0 0 6px;font-family:"Fraunces",serif;}
+.tgt-meta{font-size:.85rem;color:var(--ink-soft);line-height:1.55;}
+.tgt-tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--gold);border-radius:7px;padding:2px 8px;margin-left:8px;}
+.gf-best{font-size:.86rem;color:var(--ink-faint);margin-top:4px;}
+.gf-boss{margin-top:8px;}
+
 @media print{
   body{padding:0;background:#fff;}
   .container{border:none;box-shadow:none;border-radius:0;}
@@ -438,6 +495,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
       <h1>LevelUp English</h1>
       <p class="lede">Paste a prompt and a student response. Claude assesses against CEFR criteria, rewrites the essay one level higher, and catalogues every vocabulary and grammar upgrade for follow-up lessons.</p>
     </div>
+    <span class="who-chip" id="who-chip" style="display:none"></span>
     <button class="ghost" type="button" id="logout-btn" style="display:none">⎋ Logout</button>
   </div>
 
@@ -449,20 +507,23 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
     <button class="tab" data-screen="vocab" id="tab-vocab" disabled>4 &middot; Vocabulary<span class="tcount" id="vcount" style="display:none"></span></button>
     <button class="tab" data-screen="grammar" id="tab-grammar" disabled>5 &middot; Grammar<span class="tcount" id="gcount" style="display:none"></span></button>
     <button class="tab" data-screen="studio" id="tab-studio" disabled>6 &middot; Lesson Studio</button>
+    <button class="tab" data-screen="practice" id="tab-practice" disabled style="display:none">Practice</button>
+    <button class="tab" data-screen="class" id="tab-class" disabled style="display:none">7 &middot; Class</button>
   </nav>
 
   <main>
     <!-- ============ 0 · LOGIN (student console only) ============ -->
     <section class="screen" id="screen-login">
       <div class="pane" style="max-width:560px;margin:8px auto;text-align:center">
-        <h2 style="margin-bottom:8px">Welcome to LevelUp English</h2>
-        <p class="lede" style="margin:0 auto 22px">Enter your Respondent's ID to retrieve your writing report and your personalised improvement coach.</p>
+        <h2 style="margin-bottom:8px" id="login-title">Welcome to LevelUp English</h2>
+        <p class="lede" style="margin:0 auto 22px" id="login-lede">Enter the personal access code your teacher gave you.</p>
         <div class="field" style="text-align:left">
-          <label for="login-id">Respondent's ID</label>
-          <input type="text" id="login-id" placeholder="Your ID (e.g. your Line ID)" autocomplete="off">
+          <label for="login-id" id="login-label">Access code</label>
+          <input type="text" id="login-id" placeholder="e.g. K7MD-P2XQ" autocomplete="off">
         </div>
-        <button class="main" type="button" id="login-btn">Search record</button>
+        <button class="main" type="button" id="login-btn">Sign in</button>
         <div class="err-box" id="login-err"></div>
+        <p class="login-note" id="login-hint"></p>
       </div>
     </section>
 
@@ -540,6 +601,8 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
     <section class="screen" id="screen-report">
       <div class="report-actions">
         <button class="ghost" type="button" onclick="printScreen('screen-report')">🖨 Print report</button>
+        <button class="ghost" type="button" id="ilp-btn" style="display:none">📄 Individual learning plan</button>
+        <span class="tool-note" id="ilp-note" style="flex-basis:100%"></span>
         <span class="save-note" id="save-note" style="display:none"></span>
       </div>
       <div id="report-body"></div>
@@ -591,6 +654,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
         <button class="ghost" type="button" id="vocab-export-btn">📤 Export to Google Sheet</button>
         <button class="ghost" type="button" id="vocab-blooket-btn">🎮 Generate Blooket game file</button>
         <button class="ghost" type="button" id="vocab-study-btn" style="border-color:var(--accent-soft);color:var(--accent)">📚 Study cards</button>
+        <button class="ghost" type="button" id="vocab-weak-btn" style="border-color:var(--gold-soft);color:var(--gold);display:none">🎯 Practice weak words</button>
         <button class="ghost" type="button" id="vocab-play-btn" style="border-color:var(--gold-soft);color:var(--gold)">🕹️ Play in-app game</button>
       </div>
       <div class="tool-note" id="vocab-note"></div>
@@ -614,6 +678,14 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
       <div class="cefr-bar"><span class="cefr-label">Showing upgrade level:</span><div class="cefr-row" id="grammar-cefr-row"></div></div>
       <p class="lede" style="margin-bottom:16px">Each row lifts a structure from the student's response to the selected CEFR level, names the grammar topic, and gives a lesson-ready improvement path.</p>
       <div class="table-scroll"><table class="vtable" id="grammar-table"></table></div>
+    </section>
+
+    <!-- ============ 5b · PRACTICE GYM (student console) ============ -->
+    <section class="screen" id="screen-practice">
+      <h2>Practice Gym</h2>
+      <p class="lede" style="margin-bottom:14px">Take a sentence you actually wrote and rebuild it at the target level — same meaning, stronger English. Instant coaching, streaks, and a model version whenever you want one.</p>
+      <div class="cefr-bar"><span class="cefr-label">Target level:</span><div class="cefr-row" id="practice-cefr-row"></div></div>
+      <div id="pr-body"></div>
     </section>
 
     <!-- ============ 6 · LESSON STUDIO ============ -->
@@ -672,10 +744,12 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
             <div class="rp-score-box"><span class="rp-score-lbl">SCORE</span><span id="rp-score">0</span></div>
             <div class="rp-combo" id="rp-combo"></div>
             <div class="rp-words" id="rp-progress"></div>
+            <span class="rp-turns" id="rp-turns" style="display:none"></span>
           </div>
           <div class="rp-chips" id="rp-chips"></div>
           <div class="rp-chat" id="rp-chat"></div>
           <div class="rp-coach" id="rp-coach" style="display:none"></div>
+          <div class="rp-support" id="rp-support" style="display:none"></div>
           <div class="rp-inputrow">
             <textarea id="rp-input" rows="2" placeholder="Type the student's reply in role…"></textarea>
             <button class="ghost" type="button" id="rp-send">Send ↩</button>
@@ -683,10 +757,43 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
           <div class="file-row" style="margin-top:10px">
             <button class="ghost" type="button" id="rp-hint">💡 Help me reply</button>
             <button class="ghost" type="button" id="rp-new">↻ New scenario</button>
+            <button class="ghost" type="button" id="rp-copy">📋 Copy transcript</button>
           </div>
           <div class="rp-suggestion" id="rp-suggestion" style="display:none"></div>
+          <p class="rp-safety">Be kind and keep it school-friendly — messages that break the rules are removed and shared with your teacher.</p>
         </div>
         <div class="tool-note" id="rp-note"></div>
+      </div>
+    </section>
+
+    <!-- ============ 7 · CLASS (teacher console) ============ -->
+    <section class="screen" id="screen-class">
+      <h2>Class</h2>
+      <p class="lede" style="margin-bottom:20px">Manage student access codes, see the whole class at a glance, and turn the evidence into prioritised teaching targets.</p>
+
+      <div class="pane">
+        <div class="pane-title">Student access codes <span style="font-size:.78rem;font-weight:400;color:var(--ink-faint)">students sign in with these — personal &amp; revocable</span></div>
+        <div class="field"><label for="roster-names">Add students (one name per line — use the exact name you'll use on the Assessment tab)</label>
+          <textarea id="roster-names" placeholder="Praewa T. (M4/1)&#10;Nicha S. (M4/1)"></textarea></div>
+        <div class="file-row">
+          <button class="ghost" type="button" id="roster-add-btn">➕ Create codes</button>
+          <button class="ghost" type="button" id="roster-import-btn">📥 Import names from past assessments</button>
+          <button class="ghost" type="button" id="roster-copyall-btn">📋 Copy all name + code pairs</button>
+        </div>
+        <div class="tool-note" id="roster-cls-note"></div>
+        <div id="roster-list" style="margin-top:12px"></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-title">Class snapshot <button class="ghost" type="button" id="cls-refresh-btn">↻ Refresh</button></div>
+        <div id="cls-snapshot"><p class="up-hint" style="margin:0">Open this tab or press Refresh to build the snapshot from all saved assessments.</p></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-title">Class learning targets <button class="ghost" type="button" id="cls-targets-btn">✨ Generate from the evidence</button></div>
+        <p class="up-hint" style="margin:0 0 10px">One Claude call turns the snapshot — levels, weakest dimension, recurring error patterns — into five prioritised, classroom-ready targets with a 4-week sequence.</p>
+        <div class="tool-note" id="targets-cls-note"></div>
+        <div id="cls-targets-body"></div>
       </div>
     </section>
   </main>
@@ -763,6 +870,33 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyksZz4q-t6-bTzASjgqGkW
 const ROLE = "teacher";
 const IS_STUDENT = (ROLE === "student");
 
+/* ---------------- auth state (signed session token from the backend) ---------------- */
+const AUTH_KEY = 'lue_auth_v1_' + ROLE;
+let AUTH = { token:'', role:'', name:'', exp:0 };
+try {
+  const saved = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
+  if (saved && saved.token && saved.exp > Date.now()) AUTH = saved;
+} catch(e){}
+function saveAuth(){ try { localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); } catch(e){} }
+function clearAuth(){ AUTH = { token:'', role:'', name:'', exp:0 }; try { localStorage.removeItem(AUTH_KEY); } catch(e){} }
+function updateWhoChip(){
+  const chip = $('who-chip');
+  if (!chip) return;
+  if (AUTH.token){ chip.textContent = '👤 ' + (AUTH.name || (IS_STUDENT ? 'Student' : 'Teacher')); chip.style.display = ''; }
+  else chip.style.display = 'none';
+  const lo = $('logout-btn'); if (lo) lo.style.display = AUTH.token ? '' : 'none';
+}
+function authLost(msg){
+  clearAuth(); updateWhoChip();
+  tabs.forEach(t => { if (t.dataset.screen !== 'login') t.disabled = true; });
+  $('tab-login').style.display = '';
+  showScreen('login');
+  const e = $('login-err');
+  e.textContent = msg || 'Your session has expired — please sign in again.';
+  e.classList.add('show');
+}
+
+
 const BANDS = ["Pre-A1","A1","A2","B1","B2","C1","C2"];
 const BTN_BANDS = ["A1","A2","B1","B2","C1","C2"];   // selectable upgrade targets
 const BAND_SCORE = {"Pre-A1":0,"A1":17,"A2":33,"B1":50,"B2":67,"C1":83,"C2":100};
@@ -807,10 +941,15 @@ function loading(on, stage, sub){
   $('load-sub').textContent = sub || '';
 }
 async function api(body){
-  const res = await fetch(API_URL, { method:'POST', body: JSON.stringify(body) }); // text/plain → no CORS preflight
+  const payload = Object.assign({}, body);
+  if (AUTH.token && payload.action !== 'login') payload.token = AUTH.token;
+  const res = await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) }); // text/plain → no CORS preflight
   if (!res.ok) throw new Error('Server error ' + res.status);
   const data = await res.json();
-  if (!data.ok) throw new Error(data.error || 'Unknown server error');
+  if (!data.ok){
+    if (data.auth && payload.action !== 'login') authLost(data.error);
+    throw new Error(data.error || 'Unknown server error');
+  }
   return data;
 }
 function validatedWordCount(text){
@@ -834,73 +973,141 @@ function showScreen(name){
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id==='screen-'+name));
   window.scrollTo({top:0, behavior:'smooth'});
 }
-function unlockTabs(){ tabs.forEach(t => { if (t.dataset.screen==='login') return; if (IS_STUDENT && t.dataset.screen==='assess') return; t.disabled = false; }); }
+function unlockTabs(){ tabs.forEach(t => { const s = t.dataset.screen; if (s==='login' || s==='class') return; if (IS_STUDENT && s==='assess') return; if (!IS_STUDENT && s==='practice') return; t.disabled = false; }); }
 window.printScreen = function(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('print-target', s.id===id));
   window.print();
 };
 
-/* ---------------- role configuration & student login ---------------- */
+/* ---------------- role configuration, sign-in & session boot ---------------- */
 function configureRole(){
-  if (!IS_STUDENT) return;   // teacher console is the default markup
+  $('tab-login').style.display = '';
+  if (!IS_STUDENT){
+    // Teacher console: everything stays behind the teacher key.
+    $('login-title').textContent = 'Teacher console';
+    $('login-lede').textContent = 'Enter your teacher key to unlock assessment, class analytics and lesson tools.';
+    $('login-label').textContent = 'Teacher key';
+    $('login-id').type = 'password';
+    $('login-id').placeholder = 'Your TEACHER_KEY passphrase';
+    $('login-btn').textContent = 'Unlock console';
+    $('login-hint').textContent = 'The key is the TEACHER_KEY script property you set in Apps Script. Sessions last 12 hours.';
+    $('tab-class').style.display = '';
+    return;
+  }
+  // Student console
   document.title = 'LevelUp English';
   $('tab-assess').style.display = 'none';
-  $('tab-login').style.display = '';
-  // Tab numbering for the student console (no Assessment tab)
+  $('tab-practice').style.display = '';
   $('tab-report').innerHTML = '1 &middot; Report';
   $('tab-upgrades').innerHTML = '2 &middot; Recommended upgrades';
   $('tab-vocab').innerHTML = '3 &middot; Vocabulary<span class="tcount" id="vcount" style="display:none"></span>';
   $('tab-grammar').innerHTML = '4 &middot; Grammar<span class="tcount" id="gcount" style="display:none"></span>';
-  $('tab-studio').innerHTML = '5 &middot; Role-play';
-  // Hide Blooket buttons
-  ['vocab','grammar'].forEach(k => { const b = $(k+'-blooket-btn'); if (b) b.style.display = 'none'; });
-  // Trim Lesson Studio to the role-play arcade only
+  $('tab-practice').innerHTML = '5 &middot; Practice Gym';
+  $('tab-studio').innerHTML = '6 &middot; Role-play';
+  ['vocab','grammar'].forEach(k => {
+    const b = $(k+'-blooket-btn'); if (b) b.style.display = 'none';
+    const x = $(k+'-export-btn'); if (x) x.style.display = 'none';
+  });
   const pp = $('studio-plan-pane'); if (pp) pp.style.display = 'none';
   const mp = $('studio-materials-pane'); if (mp) mp.style.display = 'none';
   const sh2 = document.querySelector('#screen-studio h2'); if (sh2) sh2.textContent = 'Role-play Arcade';
   const intro = document.querySelector('#screen-studio > p.lede'); if (intro) intro.style.display = 'none';
-  // Top-bar copy
   const h1 = document.querySelector('.topbar h1'); if (h1) h1.textContent = 'LevelUp English';
   const lede = document.querySelector('.topbar .lede');
-  if (lede) lede.textContent = 'Log in with your Respondent\u2019s ID to see your report, your upgraded writing, and to practise with your AI coach.';
+  if (lede) lede.textContent = 'Sign in with your personal access code to see your report, study your upgrades, train in the Practice Gym and play with your AI coach.';
   const eyebrow = $('brand-sub'); if (eyebrow) eyebrow.textContent = 'Please contact T.Chris for more information (Line ID: pegasus028)';
-  const lo = $('logout-btn'); if (lo){ lo.style.display = ''; lo.addEventListener('click', studentLogout); }
-  // Show the login screen first
-  showScreen('login');
+  $('login-title').textContent = 'Welcome to LevelUp English';
+  $('login-lede').textContent = 'Enter the personal access code your teacher gave you. It unlocks your writing report and your own practice coach.';
+  $('login-label').textContent = 'Access code';
+  $('login-id').placeholder = 'e.g. K7MD-P2XQ';
+  $('login-btn').textContent = 'Sign in';
+  $('login-hint').textContent = 'Lost your code? Ask your teacher for a new one — codes are personal, so please don\u2019t share yours.';
 }
-function studentLogout(){
-  current = null; activeLevel = null;
-  $('login-id').value = '';
-  $('login-err').classList.remove('show');
-  // re-lock the content tabs until the next successful login
-  tabs.forEach(t => { if (t.dataset.screen!=='login') t.disabled = true; });
-  $('vcount').style.display = $('gcount').style.display = 'none';
-  showScreen('login');
-  $('login-id').focus();
+
+function baseUnlockForRole(){
+  if (!IS_STUDENT){
+    $('tab-assess').disabled = false;
+    $('tab-class').disabled = false;
+  }
 }
-if (IS_STUDENT){
-  $('login-btn').addEventListener('click', studentLogin);
-  $('login-id').addEventListener('keydown', e => { if (e.key==='Enter'){ e.preventDefault(); studentLogin(); } });
-}
-async function studentLogin(){
+
+$('login-btn').addEventListener('click', doLoginClick);
+$('login-id').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); doLoginClick(); } });
+const _lo = $('logout-btn'); if (_lo) _lo.addEventListener('click', doLogout);
+
+async function doLoginClick(){
   const errBox = $('login-err');
   errBox.classList.remove('show');
-  const rid = $('login-id').value.trim();
-  if (!rid){ errBox.textContent = 'Please enter your Respondent\u2019s ID.'; errBox.classList.add('show'); return; }
+  const val = $('login-id').value.trim();
+  if (!val){
+    errBox.textContent = IS_STUDENT ? 'Please enter your access code.' : 'Please enter the teacher key.';
+    errBox.classList.add('show'); return;
+  }
   try {
-    loading(true, 'Finding your record…');
-    const out = await api({ action:'get_by_id', rid:rid });
+    loading(true, IS_STUDENT ? 'Signing you in…' : 'Unlocking the console…');
+    const payload = IS_STUDENT ? { action:'login', role:'student', code:val }
+                               : { action:'login', role:'teacher', key:val };
+    const out = await api(payload);
     loading(false);
+    AUTH = { token:out.token, role:out.role, name:out.name || '', exp:Date.now() + 11.5*3600*1000 };
+    saveAuth(); updateWhoChip();
+    $('login-id').value = '';
+    applyLoginResult(out);
+  } catch(err){
+    loading(false);
+    errBox.textContent = err.message;
+    errBox.classList.add('show');
+  }
+}
+
+function applyLoginResult(out){
+  baseUnlockForRole();
+  if (!IS_STUDENT){ showScreen('assess'); return; }
+  STU.history = out.history || [];
+  if (out.record && out.record.data){
     current = { meta: out.record.meta, essay: out.record.essay, data: migrateClientData(out.record.data) };
     activeLevel = current.data.defaultLevel;
     renderAll();
     showScreen('report');
-  } catch(err){
+  } else {
+    renderNoRecord();
+  }
+}
+
+function renderNoRecord(){
+  current = null; activeLevel = null;
+  $('tab-report').disabled = false;
+  $('report-body').innerHTML =
+    '<div class="pane" style="text-align:center;padding:40px 24px">' +
+    '<h2 style="margin-bottom:10px">Hi ' + esc(AUTH.name || 'there') + ' 👋</h2>' +
+    '<p class="lede" style="margin:0 auto;max-width:520px">Your access code works, but there\u2019s no writing assessment on file for you yet. ' +
+    'Once your teacher assesses one of your essays, your report, upgrade tables, games and Practice Gym will all appear here.</p></div>';
+  showScreen('report');
+}
+
+function doLogout(){
+  clearAuth(); updateWhoChip();
+  current = null; activeLevel = null;
+  if (typeof STU === 'object') STU.history = [];
+  tabs.forEach(t => { if (t.dataset.screen !== 'login') t.disabled = true; });
+  $('vcount').style.display = $('gcount').style.display = 'none';
+  $('login-err').classList.remove('show');
+  showScreen('login');
+  $('login-id').focus();
+}
+
+async function boot(){
+  configureRole(); updateWhoChip();
+  if (!AUTH.token){ showScreen('login'); return; }
+  if (!IS_STUDENT){ baseUnlockForRole(); showScreen('assess'); return; }
+  try {
+    loading(true, 'Welcome back — loading your work…');
+    const out = await api({ action:'me' });
     loading(false);
-    errBox.textContent = (/no record/i.test(err.message))
-      ? 'No matching record was found for that ID. Please check your Respondent\u2019s ID and try again.'
-      : ('Could not load your record: ' + err.message);
-    errBox.classList.add('show');
+    applyLoginResult(out);
+  } catch(err){
+    loading(false);   // authLost() already ran if the session died
+    if (AUTH.token) showScreen('login');
   }
 }
 
@@ -1069,6 +1276,9 @@ function renderAll(){
   renderVocabTable();
   renderGrammarTable();
   resetStudio();
+  if (IS_STUDENT) renderPractice();
+  const ib = $('ilp-btn');
+  if (ib) ib.style.display = (!IS_STUDENT && current.data.savedId) ? '' : 'none';
   $('vcount').textContent = vocabRows().length;
   $('gcount').textContent = grammarRows().length;
   $('vcount').style.display = $('gcount').style.display = '';
@@ -1108,6 +1318,7 @@ function renderReport(){
   )).join('');
 
   $('report-body').innerHTML =
+    progressStripHtml() +
     '<div class="pane overall-pane"><div class="pane-title">Overall CEFR rating <span class="badge">'+esc(a.overallLevel)+'</span></div>'+
     '<p style="margin-top:0;color:var(--ink-soft)">'+esc(m.name||'')+' &middot; '+(m.wordCount||0)+' words'+
     (m.targetWords ? ' (target '+m.targetWords+')' : '')+(m.timeLimit ? ' &middot; '+m.timeLimit+' min limit' : '')+'</p>'+
@@ -1497,6 +1708,7 @@ function switchLevel(level){
   renderVocabTable();
   renderGrammarTable();
   resetStudio();
+  if (IS_STUDENT) renderPractice();
 }
 async function triggerUpgrade(level){
   if (upgradeBusy || IS_STUDENT) return;
@@ -1612,18 +1824,28 @@ function renderVocabTable(){
   const showImg = !IS_STUDENT;   // students don't see the Illustration idea column
   const head = '<thead><tr><th>#</th><th>Original<br>(level)</th><th>Replacement<br>(level)</th><th>Definition</th><th>Part of speech</th><th>Synonyms (B1·B2·C1)</th><th>Antonyms (B1·B2·C1)</th><th>Example sentences</th><th>Collocations</th>'+(showImg?'<th>Illustration idea</th>':'')+'</tr></thead>';
   const cols = showImg ? 10 : 9;
-  const body = rows.map(v => (
+  const body = rows.map(v => {
+    let mdots = '';
+    if (IS_STUDENT && !v.synthetic){
+      const m = masteryOf(v.replacement);
+      const lvl = m.seen === 0 ? 0 : (m.seen >= 3 && m.correct/m.seen >= .9 ? 3 : (m.correct/m.seen >= .7 ? 2 : 1));
+      mdots = '<span class="mdots" title="'+(m.seen ? m.correct+'/'+m.seen+' correct in games' : 'not played yet')+'">'+
+        [1,2,3].map(i=>'<span class="mdot'+(i<=lvl?' on':'')+'"></span>').join('')+'</span>';
+    }
+    return (
     '<tr id="row-'+esc(v.id)+'"><td><span class="gid v">'+esc(v.id)+'</span></td>'+
     '<td><span class="word-strong">'+esc(v.original)+'</span><span class="lv-tag">'+esc(v.originalLevel)+'</span></td>'+
-    '<td><span class="word-strong" style="color:var(--accent)">'+esc(v.replacement)+'</span><span class="lv-tag up">'+esc(v.replacementLevel)+'</span></td>'+
+    '<td><span class="word-strong" style="color:var(--accent)">'+esc(v.replacement)+'</span><span class="lv-tag up">'+esc(v.replacementLevel)+'</span>'+mdots+'</td>'+
     '<td>'+esc(v.definition)+'</td><td>'+esc(v.partOfSpeech)+'</td>'+
     '<td><ul class="mini-list">'+v.synonyms.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></td>'+
     '<td><ul class="mini-list">'+v.antonyms.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></td>'+
     '<td class="vex"><ul class="mini-list">'+v.examples.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></td>'+
     '<td><ul class="mini-list">'+v.collocations.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></td>'+
-    (showImg?'<td style="font-style:italic;color:var(--ink-soft)">'+esc(v.imageDescription)+'</td>':'')+'</tr>'
-  )).join('');
+    (showImg?'<td style="font-style:italic;color:var(--ink-soft)">'+esc(v.imageDescription)+'</td>':'')+'</tr>');
+  }).join('');
   $('vocab-table').innerHTML = head + '<tbody>' + (body || '<tr><td colspan="'+cols+'">No vocabulary upgrades at this level.</td></tr>') + '</tbody>';
+  const wb = $('vocab-weak-btn');
+  if (wb) wb.style.display = (IS_STUDENT && vocabRich().length) ? '' : 'none';
 }
 
 /* -------- 5 · grammar table -------- */
@@ -1698,7 +1920,7 @@ async function genBlooket(kind){
 }
 
 /* -------- 6 · lesson studio -------- */
-const rp = { scenario:null, scenarioText:'', history:[], used:{}, busy:false, score:0, combo:0 };
+const rp = { scenario:null, character:'Character', transcript:[], used:{}, busy:false, score:0, combo:0, ended:false, fullHouse:false };
 
 function studioPayload(){
   const m = current.meta || {};
@@ -1718,8 +1940,10 @@ function resetStudio(){
   if ($('plan-note')) $('plan-note').className = 'tool-note';
   ['slides','podcast','song','video'].forEach(k => { const n = $('mat-'+k+'-note'); if (n) n.className = 'tool-note'; });
   $('rp-note').className = 'tool-note';
-  rp.scenario = null; rp.scenarioText = ''; rp.history = []; rp.used = {}; rp.busy = false; rp.score = 0; rp.combo = 0;
+  rp.scenario = null; rp.character = 'Character'; rp.transcript = []; rp.used = {}; rp.busy = false;
+  rp.score = 0; rp.combo = 0; rp.ended = false; rp.fullHouse = false;
   if ($('rp-suggestion')) $('rp-suggestion').style.display = 'none';
+  showSupport(''); setRpTurns(-1); rpEnable(true);
   $('rp-stage').style.display = 'none';
   $('rp-setup').style.display = '';
   $('rp-chat').innerHTML = '';
@@ -1786,22 +2010,41 @@ document.querySelectorAll('[data-mat]').forEach(btn => {
   });
 });
 
-/* role-play arcade */
+/* role-play arcade — sessions now live on the SERVER (scenario + history),
+ * so the client only ever sends the student's new message. */
 $('rp-start').addEventListener('click', startRoleplay);
 $('rp-new').addEventListener('click', startRoleplay);
 $('rp-send').addEventListener('click', sendRoleplay);
 $('rp-hint').addEventListener('click', roleplayHint);
+const _rpCopy = $('rp-copy'); if (_rpCopy) _rpCopy.addEventListener('click', copyTranscript);
 $('rp-input').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendRoleplay(); }
 });
+
+function setRpTurns(n){
+  const el = $('rp-turns');
+  if (!el) return;
+  if (typeof n === 'number' && n >= 0){ el.textContent = '⏳ ' + n + ' turns left'; el.style.display = ''; }
+  else el.style.display = 'none';
+}
+function showSupport(msg){
+  const el = $('rp-support');
+  if (!el) return;
+  if (msg){ el.textContent = '💛 ' + msg; el.style.display = ''; }
+  else el.style.display = 'none';
+}
+function rpEnable(on){
+  $('rp-input').disabled = !on;
+  $('rp-send').disabled = !on;
+  $('rp-hint').disabled = !on;
+}
+
 async function roleplayHint(){
-  if (rp.busy || !rp.scenario) return;
+  if (rp.busy || !rp.scenario || rp.ended) return;
   rp.busy = true;
   const btn = $('rp-hint'); const old = btn.textContent; btn.disabled = true; btn.textContent = '💡 Thinking…';
   try {
-    const out = await api(Object.assign({
-      action:'roleplay', hint:true, scenario: rp.scenarioText, history: rp.history
-    }, studioPayload()));
+    const out = await api({ action:'roleplay_hint' });
     const box = $('rp-suggestion');
     if (out.suggestion){
       box.style.display = '';
@@ -1818,59 +2061,92 @@ async function roleplayHint(){
   btn.disabled = false; btn.textContent = old;
   rp.busy = false;
 }
+
 async function startRoleplay(){
   if (rp.busy) return;
   rp.busy = true;
   $('rp-note').className = 'tool-note';
   try {
-    loading(true, 'Setting the scene…', 'Claude is building a real-life scenario from the essay topic.');
-    const out = await api(Object.assign({ action:'roleplay', start:true }, studioPayload()));
+    loading(true, 'Setting the scene…', 'Claude is building a real-life scenario from your essay topic.');
+    const payload = IS_STUDENT
+      ? { action:'roleplay_start', targetLevel: activeLevel }
+      : Object.assign({ action:'roleplay_start' }, studioPayload());
+    const out = await api(payload);
     loading(false);
     rp.scenario = out.scenario || {};
-    rp.scenarioText = 'SCENARIO: ' + JSON.stringify(rp.scenario);
-    rp.history = [{ role:'assistant', content: out.reply }];
-    rp.used = {}; rp.score = 0; rp.combo = 0;
+    rp.character = rp.scenario.yourCharacter || 'Character';
+    rp.transcript = [];
+    rp.used = {}; rp.score = 0; rp.combo = 0; rp.ended = false;
     $('rp-score').textContent = '0';
     $('rp-combo').classList.remove('show');
     $('rp-suggestion').style.display = 'none';
+    showSupport('');
+    setRpTurns(out.turnsLeft);
+    rpEnable(true);
     $('rp-setup').style.display = 'none';
     $('rp-stage').style.display = '';
     const sc = rp.scenario;
     $('rp-scenario').innerHTML =
       '<b>'+esc(sc.title||'Role-play')+'</b><br>'+esc(sc.setting||'')+
       '<br><b>Claude plays:</b> '+esc(sc.yourCharacter||'a character')+
-      ' &middot; <b>Student plays:</b> '+esc(sc.studentRole||'herself')+
+      ' &middot; <b>You play:</b> '+esc(sc.studentRole||'yourself')+
       '<br><b>Mission:</b> '+esc(sc.mission||'')+'';
     renderChips();
     $('rp-chat').innerHTML = '';
     $('rp-coach').style.display = 'none';
-    addMsg('them', out.reply, sc.yourCharacter || 'Character');
+    addMsg('them', out.reply, rp.character);
+    rp.transcript.push({ who: rp.character, text: out.reply });
   } catch(err){
     loading(false);
     const n = $('rp-note'); n.className = 'tool-note err'; n.textContent = 'Could not start: ' + err.message;
   }
   rp.busy = false;
 }
+
 async function sendRoleplay(){
-  if (rp.busy) return;
+  if (rp.busy || rp.ended) return;
   const box = $('rp-input');
   const text = box.value.trim();
   if (!text) return;
+  if (text.length > 420){
+    const n = $('rp-note'); n.className = 'tool-note err';
+    n.textContent = 'Keep each message under 420 characters — short and snappy, like real chat!';
+    return;
+  }
   rp.busy = true;
   box.value = '';
   $('rp-suggestion').style.display = 'none';
-  addMsg('me', text, 'Student');
-  rp.history.push({ role:'user', content:text });
-  markUsedTargets(text);
-  const typing = addMsg('them', '…', rp.scenario.yourCharacter || 'Character');
+  showSupport('');
+  const myBubble = addMsg('me', text, IS_STUDENT ? 'You' : 'Student');
+  const typing = addMsg('them', '…', rp.character);
   typing.classList.add('rp-typing');
   try {
-    const out = await api(Object.assign({
-      action:'roleplay', scenario: rp.scenarioText, history: rp.history
-    }, studioPayload()));
+    const out = await api({ action:'roleplay_turn', message: text });
     typing.remove();
-    addMsg('them', out.reply, rp.scenario.yourCharacter || 'Character');
-    rp.history.push({ role:'assistant', content: out.reply });
+    if (out.support){                       // crisis pre-filter: warm support, no in-character reply
+      showSupport(out.support);
+      rp.busy = false;
+      return;
+    }
+    if (out.flagged === 'blocked' && myBubble){
+      myBubble.innerHTML = '<span class="who">' + esc(IS_STUDENT ? 'You' : 'Student') + '</span><i>(message removed by the safety filter)</i>';
+    } else {
+      rp.transcript.push({ who: IS_STUDENT ? 'You' : 'Student', text: text });
+      markUsedTargets(text);
+    }
+    if (out.ended){
+      rp.ended = true;
+      rpEnable(false);
+      setRpTurns(0);
+      if (out.coachTip){ const c = $('rp-coach'); c.style.display = ''; c.textContent = '🧭 Coach: ' + out.coachTip; }
+      rp.busy = false;
+      return;
+    }
+    if (out.reply){
+      addMsg('them', out.reply, rp.character);
+      rp.transcript.push({ who: rp.character, text: out.reply });
+    }
+    if (typeof out.turnsLeft === 'number') setRpTurns(out.turnsLeft);
     if (out.coachTip){
       const c = $('rp-coach');
       c.style.display = '';
@@ -1878,11 +2154,24 @@ async function sendRoleplay(){
     }
   } catch(err){
     typing.remove();
-    const n = $('rp-note'); n.className = 'tool-note err'; n.textContent = 'Turn failed: ' + err.message;
-    rp.history.pop();   // let the student resend
+    if (/session has ended/i.test(err.message)){
+      rp.ended = true; rpEnable(false);
+    }
+    const n = $('rp-note'); n.className = 'tool-note err'; n.textContent = err.message;
   }
   rp.busy = false;
 }
+
+function copyTranscript(){
+  if (!rp.transcript.length) return;
+  const head = 'Role-play: ' + (rp.scenario && rp.scenario.title || '') + '\nMission: ' + (rp.scenario && rp.scenario.mission || '') + '\n\n';
+  const body = rp.transcript.map(m => m.who + ': ' + m.text).join('\n');
+  navigator.clipboard.writeText(head + body).then(() => {
+    const b = $('rp-copy'); const t = b.textContent; b.textContent = '✓ Copied';
+    setTimeout(() => b.textContent = t, 1400);
+  }).catch(() => {});
+}
+
 function addMsg(side, text, who){
   const chat = $('rp-chat');
   const div = document.createElement('div');
@@ -1906,7 +2195,6 @@ function markUsedTargets(text){
     if (rp.used[v.id]) return;
     const phrase = String(v.replacement||'').toLowerCase().trim();
     if (!phrase) return;
-    // exact phrase, or root match on the head word (handles -s/-ed/-ing inflection)
     let hit = low.indexOf(phrase) >= 0;
     if (!hit){
       const head = phrase.split(/\s+/)[0].replace(/(ed|ing|es|s)$/,'');
@@ -1923,7 +2211,7 @@ function markUsedTargets(text){
   });
   if (newHits > 0){
     rp.combo += 1;
-    const gained = newHits * 100 * rp.combo;   // combo multiplies the more turns in a row you score
+    const gained = newHits * 100 * rp.combo;
     rp.score += gained;
     const sc = $('rp-score'); sc.textContent = rp.score;
     sc.classList.remove('bump'); void sc.offsetWidth; sc.classList.add('bump');
@@ -1931,7 +2219,7 @@ function markUsedTargets(text){
     if (rp.combo >= 2){ cb.textContent = '🔥 COMBO x' + rp.combo; cb.classList.add('show'); }
     comboPop('+' + gained + (rp.combo>=2 ? '  🔥x'+rp.combo : ''));
   } else {
-    rp.combo = 0;                              // a turn with no new target word breaks the combo
+    rp.combo = 0;
     $('rp-combo').classList.remove('show');
   }
   updateRpProgress();
@@ -1946,16 +2234,58 @@ function updateRpProgress(){
   const total = vocabRich().length;
   const used = Object.keys(rp.used).length;
   $('rp-progress').textContent = total ? ('⭐ ' + used + ' / ' + total + ' words' + (used===total && total>0 ? ' — full house! 🎉' : '')) : '';
+  if (total && used === total && !rp.fullHouse){ rp.fullHouse = true; comboPop('🎉 FULL HOUSE!'); }
 }
+
 
 /* =================================================================
  * INTERACTIVE GAME ENGINE
  * Game language is pinned to the WRITING level; only targets stretch.
  * ================================================================= */
-const G = { pack:null, idx:0, score:0, streak:0, scorable:0, done:0, correct:0, check:null, answered:false, mode:'play' };
+/* =================================================================
+ * INTERACTIVE GAME ENGINE
+ * Game language is pinned to the WRITING level; only targets stretch.
+ * Now with: per-word mastery memory, best scores, and a Boss Battle
+ * that re-queues every round you missed.
+ * ================================================================= */
+const G = { pack:null, idx:0, score:0, streak:0, scorable:0, done:0, correct:0, check:null, answered:false, mode:'play', missed:[], boss:false };
+
+/* ---- mastery memory (per signed-in person, stored locally) ---- */
+function masteryStore(){
+  try { return JSON.parse(localStorage.getItem('lue_mastery_' + (AUTH.name||'anon')) || '{}'); }
+  catch(e){ return {}; }
+}
+function masterySave(m){ try { localStorage.setItem('lue_mastery_' + (AUTH.name||'anon'), JSON.stringify(m)); } catch(e){} }
+function masteryOf(word){
+  const m = masteryStore()[String(word||'').toLowerCase()];
+  return m ? { seen:m.s||0, correct:m.c||0 } : { seen:0, correct:0 };
+}
+function recordMastery(round, correct){
+  let word = '';
+  if (round.type === 'gapfill' || round.type === 'unscramble') word = round.answer || '';
+  else if (round.type === 'sort') word = round.word || '';
+  word = String(word).toLowerCase().trim();
+  if (!word || !G.pack || G.pack.kind !== 'vocab') return;
+  const store = masteryStore();
+  const m = store[word] || { s:0, c:0 };
+  m.s++; if (correct) m.c++;
+  store[word] = m;
+  masterySave(store);
+}
+function weakWords(){
+  const store = masteryStore();
+  return vocabRich().map(v => String(v.replacement||'').toLowerCase())
+    .filter(w => { const m = store[w]; return !m || m.s === 0 || (m.c / m.s) < 0.7; });
+}
 
 $('vocab-play-btn').addEventListener('click', () => launchGame('vocab'));
 $('grammar-play-btn').addEventListener('click', () => launchGame('grammar'));
+const _wk = $('vocab-weak-btn');
+if (_wk) _wk.addEventListener('click', () => {
+  const ws = weakWords();
+  if (!ws.length){ toolNote('vocab','ok','🎉 No weak words right now — everything you\u2019ve played is mastered!'); return; }
+  launchGame('vocab', ws);
+});
 $('game-close').addEventListener('click', closeGame);
 $('game-action').addEventListener('click', () => { if (G.mode === 'done') closeGame(); else gameAction(); });
 
@@ -1964,7 +2294,7 @@ function norm(s){
 }
 function shuffle(a){ a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-async function launchGame(kind){
+async function launchGame(kind, focusWords){
   if (!current) return;
   const note = $(kind+'-note');
   const items = kind==='vocab' ? vocabRich() : grammarRich();
@@ -1972,14 +2302,17 @@ async function launchGame(kind){
   note.className='tool-note';
   try {
     loading(true, 'Building your game…', 'Creating varied, themed challenges at your level. One minute or so.');
-    const out = await api({
-      action:'game_pack', kind:kind,
-      writingLevel: current.data.assessment.overallLevel,   // language ceiling = WRITING level
-      targetLevel: activeLevel,
-      name: (current.meta&&current.meta.name)||'Student',
-      promptText: (current.meta&&current.meta.prompt)||'',
-      items: items
-    });
+    const payload = { action:'game_pack', kind:kind, targetLevel: activeLevel };
+    if (Array.isArray(focusWords) && focusWords.length) payload.focusWords = focusWords.slice(0,20);
+    if (!IS_STUDENT){
+      Object.assign(payload, {
+        writingLevel: current.data.assessment.overallLevel,
+        name: (current.meta&&current.meta.name)||'Student',
+        promptText: (current.meta&&current.meta.prompt)||'',
+        items: items
+      });
+    }
+    const out = await api(payload);
     loading(false);
     startGame(out.pack);
   } catch(err){
@@ -1988,18 +2321,19 @@ async function launchGame(kind){
   }
 }
 
-function startGame(pack){
+function startGame(pack, isBoss){
   G.pack = pack; G.idx = 0; G.score = 0; G.streak = 0; G.answered = false; G.mode = 'play'; G.correct = 0;
+  G.missed = []; G.boss = !!isBoss;
   G.scorable = pack.rounds.filter(r => r.type!=='teach').length;
   G.done = 0;
-  $('game-title').textContent = pack.kind==='vocab' ? 'Vocabulary Quest' : 'Grammar Quest';
-  $('game-theme').textContent = 'Pitched at ' + pack.level + ' · target items at ' + pack.targetLevel;
+  $('game-title').textContent = (G.boss ? '⚔️ Boss Battle — ' : '') + (pack.kind==='vocab' ? 'Vocabulary Quest' : 'Grammar Quest');
+  $('game-theme').textContent = G.boss ? 'Beat the rounds that beat you!' : ('Pitched at ' + pack.level + ' · target items at ' + pack.targetLevel);
   $('game-overlay').classList.remove('hidden');
   $('game-score').textContent = '0';
   $('game-streak').textContent = '';
   renderRound();
 }
-function closeGame(){ $('game-overlay').classList.add('hidden'); G.pack=null; }
+function closeGame(){ $('game-overlay').classList.add('hidden'); G.pack=null; if (typeof renderVocabTable === 'function' && current) renderVocabTable(); }
 
 function setAction(label, disabled){
   const b = $('game-action');
@@ -2040,21 +2374,23 @@ function gameAction(){
   if (!G.answered){
     if (!G.check) return;
     const res = G.check();
-    if (res == null) return;               // not ready (e.g. nothing selected)
-    if (res.retry){                        // wrong but a second chance is allowed
+    if (res == null) return;
+    if (res.retry){
       feedback('bad', '✗ ' + (res.msg || 'Not quite — try once more.'));
       return;
     }
     G.answered = true;
     G.done++;
+    recordMastery(r, !!res.correct);
     if (res.correct){
       G.correct++;
       G.streak++;
-      const pts = 10 + Math.min(G.streak-1, 5) * 2;
+      const pts = (G.boss ? 15 : 10) + Math.min(G.streak-1, 5) * 2;
       G.score += pts;
       feedback('good', '✓ ' + (res.msg || 'Correct!') + ' <span style="color:var(--ink-faint);font-weight:400">+' + pts + ' pts</span>' + (res.explain ? '<br><span style="font-weight:400;color:var(--ink-soft)">'+res.explain+'</span>' : ''));
     } else {
       G.streak = 0;
+      G.missed.push(G.idx);
       feedback('bad', '✗ ' + (res.msg || 'Not quite.') + (res.explain ? '<br><span style="font-weight:400;color:var(--ink-soft)">'+res.explain+'</span>' : ''));
     }
     $('game-score').textContent = G.score;
@@ -2353,6 +2689,8 @@ function renderOrder(r, body){
 
 function renderUnknown(r, body){ body.innerHTML='<div class="g-instruction">This round could not be displayed.</div>'; setAction('Next →'); G.check=()=>({correct:false,msg:''}); }
 
+function bestKey(){ return 'lue_best_' + G.pack.kind + '_' + (G.pack.targetLevel||'') + '_' + (AUTH.name||'anon'); }
+
 function renderFinal(){
   $('game-step').textContent = 'Complete';
   $('game-prog-fill').style.width = '100%';
@@ -2363,16 +2701,28 @@ function renderFinal(){
   const msg = pct>=90?'Outstanding — you owned this set!'
             : pct>=60?'Strong work. A couple more plays and it’s locked in.'
             : 'Good effort — replay to push your score higher.';
+  let best = 0, newBest = false;
+  try {
+    best = Number(localStorage.getItem(bestKey())||0);
+    if (!G.boss && G.score > best){ best = G.score; newBest = true; localStorage.setItem(bestKey(), String(best)); }
+  } catch(e){}
+  const missedRounds = G.missed.map(i => G.pack.rounds[i]).filter(Boolean);
   $('game-body').innerHTML =
     '<div class="g-final"><div class="gf-big">'+G.score+' pts</div>'+
+    (best ? '<div class="gf-best">'+(newBest?'🏆 New personal best!':'Personal best: '+best+' pts')+'</div>' : '')+
     '<div class="gf-stars" style="color:var(--gold)">'+stars+'</div>'+
     '<div class="gf-msg"><b>'+correct+' / '+total+'</b> correct ('+pct+'%)</div>'+
     '<div class="gf-msg">'+msg+'</div>'+
+    (missedRounds.length ? '<div class="gf-boss"><button class="main" type="button" id="g-boss" style="margin-top:6px;width:auto">⚔️ Boss Battle: retry the '+missedRounds.length+' you missed</button></div>' : '')+
     '<div class="tile-launch"><button class="ghost" type="button" id="g-replay">↻ Play again</button>'+
     '<button class="ghost" type="button" id="g-newpack">✨ Fresh questions</button></div></div>';
   feedback('', '');
-  G.mode = 'done';           // the action button now closes the game
+  G.mode = 'done';
   setAction('Done');
+  const bossBtn = document.getElementById('g-boss');
+  if (bossBtn) bossBtn.addEventListener('click', () => {
+    startGame({ kind:G.pack.kind, level:G.pack.level, targetLevel:G.pack.targetLevel, name:G.pack.name, rounds:missedRounds }, true);
+  });
   $('g-replay').addEventListener('click', () => startGame(G.pack));
   $('g-newpack').addEventListener('click', () => { const k = G.pack.kind; closeGame(); launchGame(k); });
 }
@@ -2412,8 +2762,9 @@ async function openStudy(kind){
     let addons = S.cache[cacheKey];
     if (!addons){
       loading(true, 'Building your study cards…', 'Adding pictures, audio and visual word maps for each item.');
-      const out = await api({ action:'study_pack', kind:kind, targetLevel:activeLevel,
-        name:(current.meta&&current.meta.name)||'Student', items:items });
+      const payload = { action:'study_pack', kind:kind, targetLevel:activeLevel };
+      if (!IS_STUDENT) Object.assign(payload, { name:(current.meta&&current.meta.name)||'Student', items:items });
+      const out = await api(payload);
       loading(false);
       addons = out.addons || {};
       S.cache[cacheKey] = addons;
@@ -2526,7 +2877,8 @@ async function lookupWord(word){
   if (!word) return;
   try {
     loading(true, 'Looking up “'+word+'”…', 'Building a study card for this word.');
-    const out = await api({ action:'study_word', word:word, promptText:(current.meta&&current.meta.prompt)||'' });
+    const out = await api(IS_STUDENT ? { action:'study_word', word:word }
+                                       : { action:'study_word', word:word, promptText:(current.meta&&current.meta.prompt)||'' });
     loading(false);
     S.lookup = { item: out.card, add: { emoji: out.card.emoji } };
     renderCard();
@@ -2617,8 +2969,297 @@ function grammarCard(c){
   );
 }
 
+/* =================================================================
+ * NEW FEATURES — progress strip, Practice Gym, Class tab, ILP
+ * ================================================================= */
+const STU = { history: [] };
+
+function bandLblFor(v){ const m = {17:'A1',33:'A2',50:'B1',67:'B2',83:'C1'}; return m[v]||''; }
+function progressStripHtml(){
+  if (!IS_STUDENT) return '';
+  const hist = (STU.history||[]).slice().reverse();   // oldest → newest
+  if (hist.length < 2) return '';
+  const pts = hist.map(it => {
+    const s = it.scores || {};
+    const vals = [s.ta, s.cc, s.lr, s.gr].map(Number).filter(n => isFinite(n) && n > 0);
+    const mean = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : (BAND_SCORE[it.overallLevel]||0);
+    return { y: Math.max(0, Math.min(100, mean)), lbl: it.overallLevel||'', date: it.date };
+  });
+  const W=600, H=120, L=36, R=12, T=10, B=20, iw=W-L-R, ih=H-T-B;
+  const x = i => L + (pts.length === 1 ? iw/2 : i * (iw/(pts.length-1)));
+  const y = v => T + ih - (v/100*ih);
+  const grid = [17,33,50,67,83].map(v =>
+    '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v).toFixed(1)+'" y2="'+y(v).toFixed(1)+'" stroke="#eee2cf" stroke-width="1"/>'+
+    '<text x="6" y="'+(y(v)+3).toFixed(1)+'" font-size="9" fill="#b9a98c">'+bandLblFor(v)+'</text>').join('');
+  const line = pts.map((p,i) => (i?'L ':'M ') + x(i).toFixed(1) + ' ' + y(p.y).toFixed(1)).join(' ');
+  const dots = pts.map((p,i) =>
+    '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="4" fill="'+(i===pts.length-1?'#b3502e':'#c9b489')+'"/>' +
+    (i===pts.length-1 ? '<text x="'+x(i).toFixed(1)+'" y="'+(y(p.y)-8).toFixed(1)+'" font-size="10" font-weight="700" fill="#b3502e" text-anchor="middle">'+esc(p.lbl)+'</text>' : '')
+  ).join('');
+  const latest = hist[hist.length-1].scores || {}, prev = hist[hist.length-2].scores || {};
+  const DIMS = [['ta','Task achievement'],['cc','Coherence & cohesion'],['lr','Lexical resource'],['gr','Grammar']];
+  const deltas = DIMS.map(([k,label]) => {
+    const d = (Number(latest[k])||0) - (Number(prev[k])||0);
+    const cls = d > 0 ? 'upd' : d < 0 ? 'dnd' : 'same';
+    const sym = d > 0 ? '▲ +' + d : d < 0 ? '▼ ' + d : '—';
+    return '<div class="prog-delta"><span>'+label+'</span><b class="'+cls+'">'+sym+'</b></div>';
+  }).join('');
+  return '<div class="pane"><div class="pane-title">Your journey <span style="font-size:.78rem;font-weight:400;color:var(--ink-faint)">'+pts.length+' assessments</span></div>'+
+    '<div class="prog-pane"><div class="prog-chart"><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+grid+
+    '<path d="'+line+'" fill="none" stroke="#b08d3e" stroke-width="2.5" stroke-linecap="round"/>'+dots+'</svg></div>'+
+    '<div class="prog-deltas"><div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)">Since last time</div>'+deltas+'</div></div></div>';
+}
+
+/* -------- Practice Gym (students rewrite their OWN sentences) -------- */
+const P = { items:[], idx:0, streak:0, busy:false };
+function prBestKey(){ return 'lue_prbest_' + (AUTH.name||'anon'); }
+function practiceItems(){
+  const items = [];
+  grammarRich().forEach(g => { if (g.original) items.push({ source:'grammar', id:g.id,
+    topic:(g.topic||'Grammar upgrade')+(g.subTopic?' · '+g.subTopic:''), original:g.original }); });
+  const eps = (current && current.data.assessment && current.data.assessment.errorPatterns) || [];
+  eps.forEach((e,i) => { if (e.example) items.push({ source:'error', index:i,
+    topic:e.issue||'Recurring pattern', original:e.example }); });
+  return items;
+}
+function renderPractice(){
+  if (!IS_STUDENT || !$('pr-body')) return;
+  renderCefrRow('practice-cefr-row');
+  P.items = practiceItems();
+  if (P.idx >= P.items.length) P.idx = 0;
+  drawPractice();
+}
+function drawPractice(){
+  const body = $('pr-body');
+  if (!P.items.length){
+    body.innerHTML = '<div class="pr-card" style="text-align:center;color:var(--ink-soft)">No practice sentences at this level yet — check the Grammar tab, or ask your teacher to generate an upgrade level.</div>';
+    return;
+  }
+  const it = P.items[P.idx];
+  let best = 0; try { best = Number(localStorage.getItem(prBestKey())||0); } catch(e){}
+  body.innerHTML =
+    '<div class="pr-hud"><div class="rp-score-box"><span class="rp-score-lbl">STREAK</span><span class="pr-streak" id="pr-streak">'+P.streak+'</span></div>'+
+    (best ? '<span class="gf-best">🏆 best streak: '+best+'</span>' : '')+
+    '<span class="rp-words">Sentence '+(P.idx+1)+' / '+P.items.length+'</span></div>'+
+    '<div class="pr-card">'+
+      '<span class="pr-topic">'+esc(it.topic)+'</span>'+
+      '<div style="font-size:.82rem;color:var(--ink-faint);margin-bottom:6px">You wrote:</div>'+
+      '<div class="pr-orig">'+esc(it.original)+'</div>'+
+      '<div style="font-size:.9rem;color:var(--ink-soft);margin-bottom:8px">✍️ Rewrite it so it reads at <b>'+esc(activeLevel)+'</b> — same meaning, stronger English.</div>'+
+      '<div class="pr-row"><textarea id="pr-input" maxlength="620" placeholder="Type your upgraded sentence…"></textarea>'+
+      '<button class="main" type="button" id="pr-check" style="margin-top:0;width:auto">Check ✓</button></div>'+
+      '<div class="pr-result" id="pr-result"></div>'+
+      '<div class="pr-nav"><button class="ghost" type="button" id="pr-prev">← Previous</button>'+
+      '<button class="ghost" type="button" id="pr-next">Next sentence →</button></div>'+
+    '</div>';
+  $('pr-check').addEventListener('click', checkPractice);
+  $('pr-input').addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); checkPractice(); } });
+  $('pr-prev').addEventListener('click', () => { P.idx = (P.idx - 1 + P.items.length) % P.items.length; drawPractice(); });
+  $('pr-next').addEventListener('click', () => { P.idx = (P.idx + 1) % P.items.length; drawPractice(); });
+}
+async function checkPractice(){
+  if (P.busy) return;
+  const attempt = $('pr-input').value.trim();
+  const box = $('pr-result');
+  if (!attempt){ box.className='pr-result bad show'; box.textContent = 'Type your upgraded sentence first.'; return; }
+  P.busy = true;
+  const btn = $('pr-check'); btn.disabled = true; btn.textContent = 'Grading…';
+  try {
+    const it = P.items[P.idx];
+    const out = await api({ action:'practice_check', source:it.source, id:it.id||'', index:it.index||0,
+                            level:activeLevel, attempt:attempt });
+    if (out.support){
+      box.className = 'pr-result bad show';
+      box.innerHTML = '<div class="rp-support" style="margin:0">💛 ' + esc(out.support) + '</div>';
+    } else if (out.result){
+      const r = out.result;
+      const win = r.reached && r.meaningKept !== false;
+      if (win){
+        P.streak++;
+        try { const b = Number(localStorage.getItem(prBestKey())||0); if (P.streak > b) localStorage.setItem(prBestKey(), String(P.streak)); } catch(e){}
+        comboPop('🔥 +1 streak');
+      } else {
+        P.streak = 0;
+      }
+      const st = $('pr-streak'); if (st) st.textContent = P.streak;
+      box.className = 'pr-result ' + (win ? 'good' : 'bad') + ' show';
+      box.innerHTML =
+        (win ? '🎉 <b>Target reached!</b>' : '💪 <b>Nearly.</b>') +
+        (r.levelEstimate ? '<span class="pr-badge">reads at ' + esc(r.levelEstimate) + '</span>' : '') +
+        (r.meaningKept === false ? '<div style="margin-top:6px">⚠ The meaning drifted from your original — keep the same idea, upgrade only the language.</div>' : '') +
+        (r.praise ? '<div style="margin-top:8px">👏 ' + esc(r.praise) + '</div>' : '') +
+        (r.fix ? '<div style="margin-top:6px">🔧 ' + esc(r.fix) + '</div>' : '') +
+        (r.better ? '<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">Show a model ' + esc(out.target||activeLevel) + ' version</summary><div class="pr-better">' + esc(r.better) + '</div></details>' : '');
+    }
+  } catch(err){
+    box.className = 'pr-result bad show';
+    box.textContent = err.message;
+  }
+  btn.disabled = false; btn.textContent = 'Check ✓';
+  P.busy = false;
+}
+
+/* -------- Class tab (teacher): roster, snapshot, targets -------- */
+const CLS = { loaded:false };
+function initClassTab(){
+  if (IS_STUDENT || CLS.loaded) return;
+  CLS.loaded = true;
+  refreshRoster(); refreshSnapshot();
+}
+if (!IS_STUDENT){
+  $('tab-class').addEventListener('click', initClassTab);
+  $('roster-add-btn').addEventListener('click', async () => {
+    const ta = $('roster-names');
+    const names = ta.value.trim();
+    if (!names){ classNote('roster', 'err', 'Type one student name per line first.'); return; }
+    try {
+      loading(true, 'Creating access codes…');
+      const out = await api({ action:'roster_add', names:names });
+      loading(false); ta.value = '';
+      classNote('roster', 'ok', '✓ ' + out.added.filter(a=>!a.existed).length + ' new code(s) created' +
+        (out.added.some(a=>a.existed) ? ' · existing students kept their codes' : '') + '.');
+      refreshRoster();
+    } catch(err){ loading(false); classNote('roster', 'err', err.message); }
+  });
+  $('roster-import-btn').addEventListener('click', async () => {
+    try {
+      loading(true, 'Importing names from past assessments…');
+      const out = await api({ action:'roster_import' });
+      loading(false);
+      classNote('roster', 'ok', out.note ? out.note : ('✓ ' + out.added.length + ' student(s) imported with fresh codes.'));
+      refreshRoster();
+    } catch(err){ loading(false); classNote('roster', 'err', err.message); }
+  });
+  $('roster-copyall-btn').addEventListener('click', () => {
+    const rows = CLS.students || [];
+    if (!rows.length) return;
+    const text = rows.filter(r=>r.active).map(r => r.name + '\t' + r.code).join('\n');
+    navigator.clipboard.writeText(text).then(() => classNote('roster','ok','✓ Copied ' + rows.filter(r=>r.active).length + ' name+code pairs — paste into a doc or chat.')).catch(()=>{});
+  });
+  $('cls-refresh-btn').addEventListener('click', refreshSnapshot);
+  $('cls-targets-btn').addEventListener('click', genClassTargets);
+  const _ilp = $('ilp-btn');
+  if (_ilp) _ilp.addEventListener('click', () => genLearningPlan(current && current.data.savedId, $('ilp-note')));
+}
+function classNote(kind, cls, text){
+  const n = $(kind + '-cls-note'); if (!n) return;
+  n.className = 'tool-note ' + cls; n.textContent = text;
+}
+async function refreshRoster(){
+  try {
+    const out = await api({ action:'roster_list' });
+    CLS.students = out.students || [];
+    const rows = CLS.students.map(s => (
+      '<tr class="'+(s.active?'':'off')+'"><td>'+esc(s.name)+'</td>'+
+      '<td><span class="code-chip" data-code="'+esc(s.code)+'" title="Click to copy">'+esc(s.code)+'</span></td>'+
+      '<td>'+(s.lastLogin ? new Date(s.lastLogin).toLocaleDateString() : '<span style="color:var(--ink-faint)">never</span>')+'</td>'+
+      '<td><button class="ghost mini" data-act="toggle" data-code="'+esc(s.code)+'">'+(s.active?'Disable':'Enable')+'</button> '+
+      '<button class="ghost mini" data-act="regen" data-code="'+esc(s.code)+'">↻ New code</button></td></tr>'
+    )).join('');
+    $('roster-list').innerHTML = rows
+      ? '<table class="roster-table"><thead><tr><th>Student</th><th>Access code</th><th>Last sign-in</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'
+      : '<p class="up-hint" style="margin:8px 0 0">No students yet — add names above or import from past assessments.</p>';
+    $('roster-list').querySelectorAll('.code-chip').forEach(ch => ch.addEventListener('click', () => {
+      navigator.clipboard.writeText(ch.dataset.code).then(() => { const t = ch.textContent; ch.textContent = '✓ copied'; setTimeout(()=>ch.textContent=t, 1000); }).catch(()=>{});
+    }));
+    $('roster-list').querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', async () => {
+      const code = b.dataset.code, act = b.dataset.act;
+      try {
+        if (act === 'regen' && !confirm('Give this student a NEW code? The old one stops working immediately.')) return;
+        loading(true, 'Updating roster…');
+        const cur = (CLS.students||[]).find(s => s.code === code) || {};
+        const out = await api(act === 'regen' ? { action:'roster_set', code:code, regen:true }
+                                              : { action:'roster_set', code:code, active: !cur.active });
+        loading(false);
+        if (act === 'regen') classNote('roster','ok','✓ New code for ' + out.name + ': ' + out.code);
+        refreshRoster();
+      } catch(err){ loading(false); classNote('roster','err', err.message); }
+    }));
+  } catch(err){ classNote('roster','err','Roster failed to load: ' + err.message); }
+}
+async function refreshSnapshot(){
+  const box = $('cls-snapshot');
+  box.innerHTML = '<p class="up-hint">Loading class snapshot…</p>';
+  try {
+    const out = await api({ action:'class_overview' });
+    CLS.overview = out;
+    if (!out.students.length){ box.innerHTML = '<p class="up-hint">No assessments yet — run some on the Assessment tab first.</p>'; return; }
+    const avg = Math.round(out.students.reduce((a,s)=>a+s.score,0) / out.students.length);
+    const dimNames = { ta:'Task achievement', cc:'Coherence', lr:'Lexis', gr:'Grammar' };
+    let weakest = '';
+    if (out.dims){ weakest = Object.keys(out.dims).sort((a,b)=>out.dims[a]-out.dims[b])[0]; }
+    const dist = BANDS.filter(b => out.distribution[b]).map(b =>
+      '<span class="rp-chip" style="cursor:default">'+esc(b)+' × '+out.distribution[b]+'</span>').join(' ');
+    const trend = s => {
+      if (!s.prevLevel) return '';
+      const d = bandIdx(s.level) - bandIdx(s.prevLevel);
+      return d > 0 ? ' <span class="trend-up">▲</span>' : d < 0 ? ' <span class="trend-dn">▼</span>' : '';
+    };
+    const rows = out.students.map(s => (
+      '<tr><td>'+esc(s.name)+'</td><td><b>'+esc(s.level)+'</b>'+trend(s)+'</td><td>'+s.score+'</td>'+
+      '<td style="font-size:.8rem;color:var(--ink-soft)">'+s.dims.ta+' · '+s.dims.cc+' · '+s.dims.lr+' · '+s.dims.gr+'</td>'+
+      '<td style="font-size:.82rem;color:var(--ink-faint)">'+new Date(s.date).toLocaleDateString()+' ('+s.count+'×)</td>'+
+      '<td><button class="ghost mini" data-plan="'+esc(s.savedId)+'">📄 Plan</button></td></tr>'
+    )).join('');
+    const issues = (out.topIssues||[]).map(t => (
+      '<div class="issue-card"><span class="cnt">×'+t.count+'</span><b>'+esc(t.issue)+'</b>'+
+      '<div style="margin-top:4px;color:var(--ink-soft)">e.g. <span style="color:var(--danger)">'+esc(t.example)+'</span> → <span style="color:var(--good)">'+esc(t.correction)+'</span></div></div>'
+    )).join('');
+    box.innerHTML =
+      '<div class="cls-grid">'+
+      '<div class="cls-stat"><div class="big">'+out.students.length+'</div><div class="lbl">Students assessed</div></div>'+
+      '<div class="cls-stat"><div class="big">'+avg+'</div><div class="lbl">Avg score (50 = B1)</div></div>'+
+      (weakest ? '<div class="cls-stat"><div class="big">'+esc(dimNames[weakest])+'</div><div class="lbl">Weakest dimension ('+out.dims[weakest]+')</div></div>' : '')+
+      '<div class="cls-stat"><div class="big">'+out.totalAssessments+'</div><div class="lbl">Assessments on file</div></div></div>'+
+      '<div style="margin:6px 0 14px">'+dist+'</div>'+
+      '<div class="table-scroll" style="margin-bottom:16px"><table class="roster-table"><thead><tr><th>Student</th><th>Level</th><th>Score</th><th>TA · CC · LR · GR</th><th>Latest</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      (issues ? '<div class="pane-title" style="font-size:1rem">Most common patterns across the class</div>'+issues : '');
+    box.querySelectorAll('button[data-plan]').forEach(b =>
+      b.addEventListener('click', () => genLearningPlan(b.dataset.plan, $('targets-cls-note'))));
+  } catch(err){
+    box.innerHTML = '<p class="tool-note err" style="display:block">Snapshot failed: ' + esc(err.message) + '</p>';
+  }
+}
+async function genClassTargets(){
+  const btn = $('cls-targets-btn'); btn.disabled = true;
+  try {
+    loading(true, 'Synthesising class targets…', 'Claude is turning the class evidence into a prioritised teaching plan.');
+    const out = await api({ action:'class_targets' });
+    loading(false);
+    const p = out.plan;
+    const cards = (p.targets||[]).map((t,i) => (
+      '<div class="tgt-card"><h4>'+(i+1)+'. '+esc(t.title||'')+'<span class="tgt-tag">'+esc(t.grouping||'whole-class')+'</span></h4>'+
+      '<div class="tgt-meta"><b>Why:</b> '+esc(t.why||'')+'</div>'+
+      '<div class="tgt-meta" style="margin-top:5px"><b>Try:</b> '+(t.activities||[]).map(esc).join(' · ')+'</div>'+
+      '<div class="tgt-meta" style="margin-top:5px"><b>Success looks like:</b> '+esc(t.success||'')+'</div></div>'
+    )).join('');
+    $('cls-targets-body').innerHTML =
+      '<p class="feedback-text" style="border-left:3px solid var(--gold)"><b>'+esc(p.headline||'')+'</b></p>'+cards+
+      ((p.sequence||[]).length ? '<div class="pane-title" style="font-size:1rem;margin-top:14px">Suggested sequence</div><ul class="blist">'+p.sequence.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>' : '')+
+      ((p.quickWins||[]).length ? '<div class="pane-title" style="font-size:1rem;margin-top:10px">Quick wins this week</div><ul class="blist">'+p.quickWins.map(s=>'<li style="border-left:3px solid var(--good);padding-left:10px">'+esc(s)+'</li>').join('')+'</ul>' : '')+
+      '<button class="ghost" type="button" onclick="printScreen(\'screen-class\')" style="margin-top:10px">🖨 Print</button>';
+  } catch(err){
+    loading(false);
+    classNote('targets','err','Class targets failed: ' + err.message);
+  }
+  btn.disabled = false;
+}
+async function genLearningPlan(savedId, noteEl){
+  if (!savedId){ if (noteEl){ noteEl.className='tool-note err'; noteEl.textContent='Save an assessment first.'; } return; }
+  try {
+    loading(true, 'Writing the learning plan…', 'A one-page individual plan is being written to your Google Drive.');
+    const out = await api({ action:'learning_plan', savedId:savedId });
+    loading(false);
+    if (noteEl){ noteEl.className = 'tool-note ok';
+      noteEl.innerHTML = '✓ Plan ready → <a href="'+esc(out.url)+'" target="_blank" rel="noopener">'+esc(out.title)+'</a>'; }
+  } catch(err){
+    loading(false);
+    if (noteEl){ noteEl.className = 'tool-note err'; noteEl.textContent = 'Plan failed: ' + err.message; }
+  }
+}
+
 /* ---------------- startup ---------------- */
-configureRole();
+boot();
 
 })();
 </script>
