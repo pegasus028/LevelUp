@@ -3261,6 +3261,19 @@ async function genLearningPlan(savedId, noteEl){
 /* ---------------- startup ---------------- */
 boot();
 
+// --- NEW: Read access key from URL ---
+const urlParams = new URLSearchParams(window.location.search);
+const accessKey = urlParams.get('key');
+
+// If a key is present and the user isn't already logged in
+if (accessKey && !AUTH.token) {
+  $('login-id').value = accessKey;
+  doLoginClick(); // Trigger the login process automatically
+  
+  // Clean the address bar so the key isn't left lingering on the screen
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 })();
 </script>
 </body>
