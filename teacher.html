@@ -465,6 +465,14 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .code-chip{font-family:ui-monospace,Menlo,monospace;font-weight:700;letter-spacing:.06em;background:var(--gold-wash);border:1px solid var(--gold-soft);border-radius:8px;padding:3px 9px;cursor:pointer;}
 .code-chip:hover{background:var(--gold-soft);}
 .roster-table .off td{opacity:.45;}
+.cohort-box{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:0 0 12px;background:#fbfaf7;}
+.cohort-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:.85rem;color:var(--ink-soft);margin-bottom:8px;}
+.cohort-list{display:flex;flex-wrap:wrap;gap:7px;}
+.cohort-chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:6px 11px;font-size:.85rem;cursor:pointer;user-select:none;}
+.cohort-chip:hover{border-color:var(--accent-soft);}
+.cohort-chip input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
+.cohort-chip.on{border-color:var(--accent);background:var(--accent-wash);}
+.ghost.mini{padding:5px 9px;font-size:.78rem;}
 .trend-up{color:var(--good);font-weight:700;} .trend-dn{color:var(--danger);font-weight:700;}
 .issue-card{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:12px 15px;margin-bottom:9px;font-size:.9rem;}
 .issue-card .cnt{float:right;font-weight:700;color:var(--accent);}
@@ -534,6 +542,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .ut-context .spk{font-family:"Inter",sans-serif;font-weight:700;color:var(--accent);font-size:.86rem;}
 .ut-gap{display:inline-block;min-width:64px;text-align:center;border-bottom:2px solid var(--accent);color:var(--accent);font-weight:700;font-family:"Inter",sans-serif;font-size:.9rem;}
 .ut-gap.here{background:var(--gold-wash);border-radius:5px 5px 0 0;}
+.ut-context .ut-ref{font-weight:700;color:var(--accent);background:var(--gold-wash);border-radius:3px;padding:0 2px;}
 .ut-stem{font-size:1.04rem;font-weight:600;line-height:1.5;margin:0 0 14px;}
 .ut-stem .sit{display:block;font-family:"Newsreader",Georgia,serif;font-weight:400;font-size:1.06rem;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:10px 13px;margin-top:8px;}
 .ut-seg{font-family:"Newsreader",Georgia,serif;font-size:1.1rem;line-height:2.1;}
@@ -542,7 +551,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .ut-opts{display:flex;flex-direction:column;gap:9px;}
 .ut-opt{display:flex;align-items:flex-start;gap:11px;text-align:left;width:100%;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:13px 15px;cursor:pointer;font-family:"Newsreader",Georgia,serif;font-size:1.02rem;color:var(--ink);transition:.13s;min-height:48px;}
 .ut-opt:hover:not(:disabled){border-color:var(--accent-soft);background:var(--accent-wash);}
-.ut-opt .ok{flex:none;width:25px;height:25px;border-radius:7px;background:var(--paper);border:1px solid var(--line-strong);color:var(--ink-soft);font-family:"Inter",sans-serif;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.ut-opt .ok{flex:none;width:22px;height:22px;border-radius:50%;background:var(--paper);border:1.5px solid var(--line-strong);color:#fff;font-family:"Inter",sans-serif;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
 .ut-opt.sel{border-color:var(--accent);background:var(--accent-wash);}
 .ut-opt.sel .ok{background:var(--accent);color:#fff;border-color:var(--accent);}
 .ut-opt.right{border-color:var(--good);background:var(--good-wash);}
@@ -947,13 +956,20 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 
       <div class="pane">
         <div class="pane-title">Unit test results <button class="ghost" type="button" id="ut-scores-refresh">↻ Refresh</button></div>
-        <p class="up-hint" style="margin:0 0 10px">The highest unit test score each student has reached at every CEFR level.</p>
+        <p class="up-hint" style="margin:0 0 10px">The highest <b>Exam-mode</b> unit test score each student has reached at every CEFR level. Practice runs are not counted.</p>
         <div id="ut-scores-body"><p class="up-hint" style="margin:0">Open this tab or press Refresh to load results.</p></div>
       </div>
 
       <div class="pane">
         <div class="pane-title">Class learning targets <button class="ghost" type="button" id="cls-targets-btn">✨ Generate from the evidence</button></div>
         <p class="up-hint" style="margin:0 0 10px">One Claude call turns the snapshot — levels, weakest dimension, recurring error patterns — into five prioritised, classroom-ready targets with a 4-week sequence.</p>
+        <div class="cohort-box" id="cohort-box">
+          <div class="cohort-head">
+            <span><b>Cohort for these targets</b> — tick the students to include. Leave all unticked to use the whole class.</span>
+            <button class="ghost mini" type="button" id="cohort-clear-btn">✖ Clear all selection</button>
+          </div>
+          <div id="cohort-list" class="cohort-list"><p class="up-hint" style="margin:0">Refresh the snapshot above to list students.</p></div>
+        </div>
         <div class="tool-note" id="targets-cls-note"></div>
         <div id="cls-targets-body"></div>
       </div>
@@ -1878,6 +1894,12 @@ function switchLevel(level){
   renderGrammarTable();
   resetStudio();
   if (IS_STUDENT) renderPractice();
+  // If the Unit Test tab is open and no test is running, rebuild its home so
+  // the next test is based on the newly-selected level.
+  if (typeof renderUnitTest === 'function' && typeof UT === 'object' && UT.mode === 'idle'){
+    const scr = document.getElementById('screen-unittest');
+    if (scr && scr.classList.contains('active')) renderUnitTest();
+  }
 }
 async function triggerUpgrade(level){
   if (upgradeBusy || IS_STUDENT) return;
@@ -3303,7 +3325,7 @@ async function checkPractice(){
 }
 
 /* -------- Class tab (teacher): roster, snapshot, targets -------- */
-const CLS = { loaded:false, utLoaded:false };
+const CLS = { loaded:false, utLoaded:false, cohort: {} };   // cohort: selected student names -> 1
 function initClassTab(){
   if (IS_STUDENT || CLS.loaded) return;
   CLS.loaded = true;
@@ -3342,6 +3364,8 @@ if (!IS_STUDENT){
   $('cls-refresh-btn').addEventListener('click', refreshSnapshot);
   const _uts = $('ut-scores-refresh'); if (_uts) _uts.addEventListener('click', refreshUnitScores);
   $('cls-targets-btn').addEventListener('click', genClassTargets);
+  const _coc = $('cohort-clear-btn');
+  if (_coc) _coc.addEventListener('click', function(){ CLS.cohort = {}; renderCohortList(); });
   const _ilp = $('ilp-btn');
   if (_ilp) _ilp.addEventListener('click', () => genLearningPlan(current && current.data.savedId, $('ilp-note')));
 }
@@ -3427,15 +3451,45 @@ async function refreshSnapshot(){
       (issues ? '<div class="pane-title" style="font-size:1rem">Most common patterns across the class</div>'+issues : '');
     box.querySelectorAll('button[data-plan]').forEach(b =>
       b.addEventListener('click', () => genLearningPlan(b.dataset.plan, $('targets-cls-note'))));
+    CLS.snapshotStudents = out.students.map(function(s){ return s.name; });
+    renderCohortList();
   } catch(err){
     box.innerHTML = '<p class="tool-note err" style="display:block">Snapshot failed: ' + esc(err.message) + '</p>';
   }
 }
+/* Cohort selector for the learning targets. Default: all UNSELECTED. */
+function renderCohortList(){
+  const box = $('cohort-list');
+  if (!box) return;
+  const names = CLS.snapshotStudents || [];
+  if (!names.length){
+    box.innerHTML = '<p class="up-hint" style="margin:0">Refresh the snapshot above to list students.</p>';
+    return;
+  }
+  box.innerHTML = names.map(function(n){
+    const on = !!CLS.cohort[n];
+    return '<label class="cohort-chip' + (on ? ' on' : '') + '">' +
+      '<input type="checkbox" data-name="' + esc(n) + '"' + (on ? ' checked' : '') + '>' +
+      '<span>' + esc(n) + '</span></label>';
+  }).join('');
+  box.querySelectorAll('input[data-name]').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      const nm = cb.getAttribute('data-name');
+      if (cb.checked) CLS.cohort[nm] = 1; else delete CLS.cohort[nm];
+      cb.closest('.cohort-chip').classList.toggle('on', cb.checked);
+    });
+  });
+}
+function cohortSelected(){ return Object.keys(CLS.cohort || {}); }
+
 async function genClassTargets(){
   const btn = $('cls-targets-btn'); btn.disabled = true;
+  const cohort = cohortSelected();
   try {
-    loading(true, 'Synthesising class targets…', 'Claude is turning the class evidence into a prioritised teaching plan.');
-    const out = await api({ action:'class_targets' });
+    loading(true, 'Synthesising class targets…',
+      cohort.length ? 'Focusing on the ' + cohort.length + ' selected student(s).'
+                    : 'Claude is turning the class evidence into a prioritised teaching plan.');
+    const out = await api({ action:'class_targets', cohort: cohort });
     loading(false);
     const p = out.plan;
     const cards = (p.targets||[]).map((t,i) => (
@@ -3445,6 +3499,8 @@ async function genClassTargets(){
       '<div class="tgt-meta" style="margin-top:5px"><b>Success looks like:</b> '+esc(t.success||'')+'</div></div>'
     )).join('');
     $('cls-targets-body').innerHTML =
+      '<p class="up-hint" style="margin:0 0 8px">Cohort: <b>' +
+        (cohort.length ? esc(cohort.join(', ')) : 'whole class') + '</b></p>' +
       '<p class="feedback-text" style="border-left:3px solid var(--gold)"><b>'+esc(p.headline||'')+'</b></p>'+cards+
       ((p.sequence||[]).length ? '<div class="pane-title" style="font-size:1rem;margin-top:14px">Suggested sequence</div><ul class="blist">'+p.sequence.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>' : '')+
       ((p.quickWins||[]).length ? '<div class="pane-title" style="font-size:1rem;margin-top:10px">Quick wins this week</div><ul class="blist">'+p.quickWins.map(s=>'<li style="border-left:3px solid var(--good);padding-left:10px">'+esc(s)+'</li>').join('')+'</ul>' : '')+
@@ -3490,6 +3546,7 @@ function utRng(seed){
   };
 }
 function utPick(rng, arr){ return arr[Math.floor(rng() * arr.length)]; }
+function utLetter(i){ return String.fromCharCode(65 + (i % 26)); }  // 0->A, 1->B …  (printable paper only; screen shows no labels)
 function utShuffle(rng, arr){
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
@@ -4060,11 +4117,26 @@ function utVocabDistractors(rng, v, allVocab, want){
     out.push(w);
   };
 
-  utShuffle(rng, utVocabList(v, 'antonyms')).forEach(push);
-
   const myPos = utPos(v);
   const others = utShuffle(rng, allVocab.filter(function(o){ return o !== v; }));
+
+  // (0) ONE plausible near-miss FIRST: a same-part-of-speech target word
+  //     that is NOT a synonym of the answer — close enough to tempt, but
+  //     wrong in this context. (Global change #2.)
+  if (myPos){
+    const nearPool = others.filter(function(o){
+      if (utPos(o) !== myPos) return false;
+      const w = utLc(utVocabWord(o));
+      return w && !banned[w];
+    });
+    if (nearPool.length) push(utVocabWord(nearPool[0]));
+  }
+
+  // (1) the answer's own antonyms (opposite meaning — unambiguously wrong)
+  utShuffle(rng, utVocabList(v, 'antonyms')).forEach(push);
+  // (2) other target words with a different part of speech (wrong grammar)
   others.forEach(function(o){ if (utPos(o) && myPos && utPos(o) !== myPos) push(utVocabWord(o)); });
+  // (3) any remaining target words / their antonyms
   others.forEach(function(o){ push(utVocabWord(o)); });
   others.forEach(function(o){ utVocabList(o, 'antonyms').forEach(push); });
 
@@ -4084,6 +4156,7 @@ function utMakeItem(rng, spec){
     answer: order.map(function(o){ return o.correct; }).indexOf(true),
     explain: spec.explain || '',
     teaches: spec.teaches || '',
+    refWord: spec.refWord || '',
     ref: spec.ref || ''
   };
 }
@@ -4107,56 +4180,76 @@ function utBuildCloze(rng, ctx, want){
   const spec = utLevelSpec(ctx.level);
   const vocab = ctx.vocab;
   const items = [];
-  const passageParts = [];
 
-  const pool = utShuffle(rng, vocab).slice(0, Math.max(want, 1) * 3);
-  const essaySents = ctx.clozeSents || [];
+  const pool = utShuffle(rng, vocab).slice(0, Math.max(want, 1) * 4);
+  // Only gap words that live inside the student's own essay sentences, so the
+  // passage always reads as a complete, continuous text (never a mid-sentence
+  // fragment or a stitched-together set of unrelated example sentences).
+  const essaySents = (ctx.clozeSents || []).filter(function(s){ return utTokens(s).length >= 4; });
 
-  // Match each candidate word to a sentence that actually contains it.
-  const used = {};
-  const chosen = [];
-  for (let i = 0; i < pool.length && chosen.length < want; i++){
+  // 1) Choose gap words, each tied to the FIRST essay sentence that contains it.
+  const usedWord = {};
+  const gapBySent = {};        // sentence index -> { v, word, hit }
+  const chosenSentIdx = [];    // sentence indices that carry a gap, in text order
+  for (let i = 0; i < pool.length && chosenSentIdx.length < want; i++){
     const v = pool[i];
     const w = utVocabWord(v);
-    if (!w || used[utLc(w)]) continue;
-    let host = null;
+    if (!w || usedWord[utLc(w)]) continue;
     for (let j = 0; j < essaySents.length; j++){
-      if (used['S' + j]) continue;
+      if (gapBySent[j]) continue;
       const hit = utFindWord(essaySents[j], w);
-      if (hit){ host = { sent: essaySents[j], hit: hit, key: 'S' + j }; break; }
+      if (!hit) continue;
+      // Q3 fix: never gap a word that also appears elsewhere in the SAME sentence
+      // (otherwise the answer is printed verbatim right next to its own blank,
+      // e.g. "bully ___ people" with the answer "other people").
+      const rest = essaySents[j].slice(0, hit.index) + ' ' + essaySents[j].slice(hit.index + hit.text.length);
+      if (utFindWord(rest, w)) continue;
+      gapBySent[j] = { v: v, word: w, hit: hit };
+      usedWord[utLc(w)] = 1;
+      chosenSentIdx.push(j);
+      break;
     }
-    if (!host){
-      const ex = utVocabList(v, 'examples')[0] || '';
-      const hit = ex ? utFindWord(ex, w) : null;
-      if (ex && hit) host = { sent: utClean(ex), hit: hit, key: null };
+  }
+  if (!chosenSentIdx.length) return { items: [], passage: [] };
+
+  chosenSentIdx.sort(function(a, b){ return a - b; });
+
+  // 2) The passage is the CONTINUOUS run of essay sentences from the first
+  //    gapped sentence to the last — including the sentences in between that
+  //    have no gap — so the reading stays coherent and starts at a sentence
+  //    boundary. Cap the length so lower levels don't get an essay-long block.
+  const first = chosenSentIdx[0], last = chosenSentIdx[chosenSentIdx.length - 1];
+  const passage = [];
+  let gapNo = 0;
+  for (let j = first; j <= last; j++){
+    const g = gapBySent[j];
+    if (g){
+      const d = utVocabDistractors(rng, g.v, vocab, spec.opts - 1);
+      const s = {
+        type: 'cloze', part: 1,
+        answer: g.word, distractors: d,
+        explain: '“' + g.word + '” means ' + utClean(g.v.definition || '') + ' — that is exactly what the gap needs here.',
+        teaches: g.word, ref: g.v.id || ''
+      };
+      if (!utEnoughOptions(s, spec.opts)){
+        // Can't build clean options — leave the word in the text rather than
+        // dropping the whole sentence and breaking the passage.
+        passage.push({ text: g.v ? essaySents[j] : essaySents[j] });
+        continue;
+      }
+      gapNo++;
+      passage.push({
+        before: essaySents[j].slice(0, g.hit.index),
+        after: essaySents[j].slice(g.hit.index + g.hit.text.length),
+        n: gapNo
+      });
+      items.push(utMakeItem(rng, s));
+    } else {
+      passage.push({ text: essaySents[j] });     // plain connecting sentence
     }
-    if (!host) continue;
-    if (host.key) used[host.key] = 1;
-    used[utLc(w)] = 1;
-    chosen.push({ v: v, word: w, host: host });
   }
 
-  chosen.sort(function(a, b){
-    const ai = a.host.key ? Number(a.host.key.slice(1)) : 999;
-    const bi = b.host.key ? Number(b.host.key.slice(1)) : 999;
-    return ai - bi;
-  });
-  chosen.forEach(function(c, n){
-    const d = utVocabDistractors(rng, c.v, vocab, spec.opts - 1);
-    const s = {
-      type: 'cloze', part: 1,
-      answer: c.word, distractors: d,
-      explain: '“' + c.word + '” means ' + utClean(c.v.definition || '') + ' — that is exactly what the gap needs here.',
-      teaches: c.word, ref: c.v.id || ''
-    };
-    if (!utEnoughOptions(s, spec.opts)) return;
-    const before = c.host.sent.slice(0, c.host.hit.index);
-    const after = c.host.sent.slice(c.host.hit.index + c.host.hit.text.length);
-    passageParts.push({ before: before, after: after, n: n + 1 });
-    items.push(utMakeItem(rng, s));
-  });
-
-  return { items: items, passage: passageParts };
+  return { items: items, passage: passage };
 }
 
 /* =================================================================
@@ -4300,11 +4393,40 @@ function utChunkDistractors(chunk){
   return [];
 }
 
+/* Short, theme-aware connecting lines so the dialogue reads as a real
+ * conversation instead of isolated gapped fragments (Q5 fix). */
+const UT_DLG_OPENERS = [
+  'Have you been thinking about our topic much?',
+  'Can I ask you something about the essay theme?',
+  'What is your take on all of this?',
+  'I keep going back and forth on this — what do you think?'
+];
+const UT_DLG_LINKS = [
+  'That makes sense. What else stands out to you?',
+  'Interesting — go on.',
+  'I see what you mean. Anything to add?',
+  'Fair point. And after that?',
+  'Right. So what would you say next?'
+];
+const UT_DLG_CLOSERS = [
+  'Thanks — that really helped me understand it.',
+  'Good talk. I think we covered it well.',
+  'Agreed. Let us leave it there for now.'
+];
+
 function utBuildDialogue(rng, ctx, want){
   const spec = utLevelSpec(ctx.level);
   const names = utShuffle(rng, [['Alex','Jamie'], ['Casey','Morgan'], ['Nina','Ravi'], ['Mia','Theo'], ['Sam','Priya']])[0];
   const lines = [], items = [];
   const pool = utShuffle(rng, ctx.grammar);
+  const linkPool = utShuffle(rng, UT_DLG_LINKS);
+
+  // Speaker A always opens; gapped lines and connectors then alternate so
+  // both speakers take turns and every gap sits inside a two-way exchange.
+  let turn = 0;                                   // 0 = names[0], 1 = names[1]
+  const say = function(text){ lines.push({ who: names[turn % 2], text: utContract(text) }); turn++; };
+
+  say(utPick(rng, UT_DLG_OPENERS));               // context line (no gap)
 
   for (let i = 0; i < pool.length && items.length < want; i++){
     const g = pool[i];
@@ -4325,14 +4447,117 @@ function utBuildDialogue(rng, ctx, want){
     };
     if (!utEnoughOptions(s, spec.opts)) continue;
 
+    // A short connector from the other speaker before each gap (except the first).
+    if (items.length > 0){ say(linkPool[items.length % linkPool.length]); }
+
     const toks = chunk.tokens.slice();
     const blankId = items.length + 1;
     const before = toks.slice(0, chunk.from).join(' ');
     const after = toks.slice(chunk.to + 1).join(' ');
-    lines.push({ who: names[items.length % 2], before: utContract(before), after: utContract(after), n: blankId });
+    lines.push({ who: names[turn % 2], before: utContract(before), after: utContract(after), n: blankId });
+    turn++;
     items.push(utMakeItem(rng, s));
   }
+
+  if (!items.length) return { items: [], lines: [], speakers: names };
+  say(utPick(rng, UT_DLG_CLOSERS));               // context line (no gap)
+
   return { items: items, lines: lines, speakers: names };
+}
+
+/* =================================================================
+ * Sentence rewording — used by the "same-situation" transform so the
+ * options are markedly different from the given sentence (not a single
+ * word swapped), while the CORRECT option keeps the same meaning and
+ * still exercises the target word.
+ * ================================================================= */
+
+/* Safe whole-phrase paraphrase substitutions. Left = pattern, right =
+ * list of equivalents; only applied when the meaning is preserved in any
+ * ordinary context. Function words / framing only — content words are
+ * handled through the vocabulary's own synonyms. */
+const UT_PARAPHRASE = [
+  [/\bin order to\b/gi, ['so as to', 'so that they can']],
+  [/\bbecause of\b/gi, ['owing to', 'as a result of', 'due to']],
+  [/\bbecause\b/gi, ['since', 'as', 'given that']],
+  [/\bsome users\b/gi, ['certain people', 'some individuals']],
+  [/\busers\b/gi, ['people', 'individuals']],
+  [/\boften\b/gi, ['frequently', 'regularly']],
+  [/\balways\b/gi, ['constantly', 'at all times']],
+  [/\bnowadays\b/gi, ['these days', 'today']],
+  [/\bfor example\b/gi, ['for instance', 'as an example']],
+  [/\bhas become\b/gi, ['is now', 'has turned into']],
+  [/\bhave become\b/gi, ['are now', 'have turned into']],
+  [/\bbecame\b/gi, ['turned into', 'grew into']],
+  [/\bstruggle to\b/gi, ['find it hard to', 'have difficulty trying to']],
+  [/\bposted online\b/gi, ['shared on the internet', 'put online']],
+  [/\bonline\b/gi, ['on the internet', 'on social media']],
+  [/\byoung users\b/gi, ['younger people', 'young people']],
+  [/\bnot appropriate\b/gi, ['unsuitable', 'not suitable']],
+  [/\bimportant\b/gi, ['significant', 'crucial']],
+  [/\bproblem\b/gi, ['issue', 'difficulty']],
+  [/\bthink\b/gi, ['believe', 'feel']],
+  [/\bshould\b/gi, ['ought to', 'really need to']]
+];
+
+/* Reword everything EXCEPT the protected phrase (the target vocabulary),
+ * so that phrase still appears while the rest of the sentence is clearly
+ * rephrased. `rng` keeps a paper reproducible. */
+/* Fix "a"/"an" so it agrees with the word that actually follows after any
+ * substitution (e.g. "an daily" -> "a daily", "a intrusion" -> "an intrusion"). */
+function utFixArticles(s){
+  return String(s || '').replace(/\b(a|an|A|An)\s+([A-Za-z][\w'-]*)/g, function(m, art, word){
+    const vowelSound = /^[aeiou]/i.test(word) && !/^(uni|use|user|euro|one|once)/i.test(word);
+    const cap = /^[A-Z]/.test(art);
+    const fixed = vowelSound ? 'an' : 'a';
+    return (cap ? fixed.charAt(0).toUpperCase() + fixed.slice(1) : fixed) + ' ' + word;
+  });
+}
+
+function utReword(rng, sentence, protectPhrase){
+  let s = ' ' + utClean(sentence) + ' ';
+  const guard = '\u0001';                       // placeholder for the protected span
+  let protectedText = '';
+  if (protectPhrase){
+    const hit = utFindWord(s, protectPhrase);
+    if (hit){ protectedText = hit.text; s = s.slice(0, hit.index) + guard + s.slice(hit.index + hit.text.length); }
+  }
+  const order = utShuffle(rng, UT_PARAPHRASE);
+  let changes = 0;
+  order.forEach(function(rule){
+    if (changes >= 4) return;                    // don't over-transform
+    if (!rule[0].test(s)) { rule[0].lastIndex = 0; return; }
+    const rep = utPick(rng, rule[1]);
+    s = s.replace(rule[0], function(){ return rep; });
+    rule[0].lastIndex = 0;
+    changes++;
+  });
+  if (protectPhrase && protectedText){ s = s.replace(guard, protectedText); }
+  return { text: utFixArticles(utCap(utTidy(s))), changed: changes };
+}
+
+/* Reject an option sentence that is obviously ungrammatical, e.g. two bare
+ * verbs jammed together ("bully harass people"), a repeated word, a wrong
+ * article, or a stray adjacent duplicate stem ("other others"). */
+function utLooksGrammatical(sentence){
+  const s = utClean(sentence);
+  if (!s) return false;
+  const toks = utTokens(s).map(function(t){ return utLc(t).replace(/[^a-z']/g, ''); });
+  for (let i = 0; i < toks.length - 1; i++){
+    const a = toks[i], b = toks[i + 1];
+    if (!a || !b) continue;
+    if (a === b) return false;                                   // "the the", "other other"
+    // near-duplicate stems side by side ("other others", "people peoples")
+    if (a.length >= 4 && b.length >= 4 && (a.indexOf(b) === 0 || b.indexOf(a) === 0)) return false;
+    // a/an disagreement that survived (shouldn't, after utFixArticles, but guard anyway)
+    if (a === 'a'  && /^[aeiou]/.test(b) && !/^(uni|use|user|euro|one|once)/.test(b)) return false;
+    if (a === 'an' && !/^[aeiou]/.test(b)) return false;
+    // two consecutive lexical verbs with no linker (bully harass, make create)
+    const av = utKnownVerb(utBaseOf(a)), bv = utKnownVerb(utBaseOf(b));
+    const linker = /^(to|and|or|then|please|help|let|make|go|come|will|would|can|could|should|must|might|may)$/;
+    if (av && bv && !linker.test(a) && !linker.test(b)) return false;
+  }
+  return true;
 }
 
 /* =================================================================
@@ -4367,7 +4592,13 @@ function utBuildTransform(rng, ctx, want){
     items.push(utMakeItem(rng, s));
   }
 
-  // (b) meaning-match from vocabulary
+  // (b) meaning-match from vocabulary.
+  //   Situation  : the student's own example sentence (unchanged).
+  //   Correct    : a full REWORD of that sentence that keeps the target
+  //                word's meaning (synonym) and stays grammatical.
+  //   Distractors: reworded sentences whose key word is swapped for a
+  //                different-meaning word — including one NEAR-MISS that is
+  //                close in meaning but wrong in this context.
   const vPool = utShuffle(rng, ctx.vocab.filter(function(v){
     return utVocabList(v, 'synonyms').length && utVocabList(v, 'examples').length;
   }));
@@ -4377,20 +4608,60 @@ function utBuildTransform(rng, ctx, want){
     const ex = utClean(utVocabList(v, 'examples')[0]);
     const hit = utFindWord(ex, word);
     if (!hit) continue;
+
     const syn = utVocabList(v, 'synonyms')[0];
     const ants = utVocabList(v, 'antonyms');
-    const swap = function(w){ return ex.slice(0, hit.index) + w + ex.slice(hit.index + hit.text.length); };
+    if (!syn) continue;
+
+    // Build the correct option: reword the whole sentence, then put the
+    // synonym in place of the target word so the meaning is preserved.
+    const reworded = utReword(rng, ex, word);
+    const rwHit = utFindWord(reworded.text, word);
+    if (!rwHit) continue;                                   // target survived the reword?
+    const correct = utFixArticles(utTidy(reworded.text.slice(0, rwHit.index) + syn + reworded.text.slice(rwHit.index + rwHit.text.length)));
+    // Grammaticality guard — this is what stops "bully harass people".
+    if (!utLooksGrammatical(correct)) continue;
+    if (utLc(correct) === utLc(ex)) continue;               // must differ from the situation
+
+    // Distractor word pool — all SAME part of speech as the target so the
+    // substitution stays grammatical in the slot (no noun dropped into a verb
+    // slot). Near-miss first (close but wrong here), then clearly-wrong words.
     const myPos = utPos(v);
-    const samePos = ctx.vocab.filter(function(o){ return o !== v && utPos(o) === myPos; });
-    const others = utVocabDistractors(rng, v, samePos.length >= 2 ? samePos : ctx.vocab, spec.opts + 2);
+    const samePosV = ctx.vocab.filter(function(o){ return o !== v && utVocabWord(o) && (!myPos || utPos(o) === myPos); });
+    const wrongWords = [];
+    const pushWrong = function(w){
+      if (!w) return;
+      const k = utLc(w);
+      if (k === utLc(word) || k === utLc(syn)) return;
+      if (wrongWords.indexOf(w) >= 0) return;
+      if (k.split(/\s+/).length > 2) return;                  // keep single-slot fills
+      wrongWords.push(w);
+    };
+    // near-miss: a same-POS other target word (plausible, but wrong here)
+    if (samePosV.length){ pushWrong(utVocabWord(utShuffle(rng, samePosV)[0])); }
+    // then antonyms of the target (same POS, clearly opposite meaning)
+    utShuffle(rng, ants).forEach(pushWrong);
+    // then more same-POS target words
+    utShuffle(rng, samePosV).forEach(function(o){ pushWrong(utVocabWord(o)); });
+
+    const seen = {}; seen[utLc(correct)] = 1; seen[utLc(syn)] = 1;
     const dis = [];
-    ants.slice(0, 2).forEach(function(a){ if (dis.length < spec.opts - 1) dis.push(swap(a)); });
-    others.forEach(function(o){ if (dis.length < spec.opts - 1) dis.push(swap(o)); });
+    for (let k = 0; k < wrongWords.length && dis.length < spec.opts - 1; k++){
+      const wrw = wrongWords[k];
+      if (seen[utLc(wrw)]) continue;
+      const opt = utFixArticles(utTidy(reworded.text.slice(0, rwHit.index) + wrw + reworded.text.slice(rwHit.index + rwHit.text.length)));
+      if (!utLooksGrammatical(opt)) continue;
+      if (seen[utLc(opt)]) continue;
+      seen[utLc(opt)] = 1;
+      dis.push(opt);
+    }
+
     const s = {
       type: 'transform', part: 3,
       stem: ex,
-      answer: swap(syn), distractors: dis.slice(0, spec.opts - 1),
-      explain: '“' + syn + '” is the closest match for “' + word + '” (' + utClean(v.definition || '') + ').',
+      answer: correct, distractors: dis,
+      explain: '“' + syn + '” keeps the meaning of “' + word + '” (' + utClean(v.definition || '') +
+               '); the other options change the meaning.',
       teaches: word, ref: v.id || ''
     };
     if (!utEnoughOptions(s, spec.opts)) continue;
@@ -4540,7 +4811,7 @@ function utBuildReading(rng, ctx, want){
       stem: 'What does “' + utVocabWord(v) + '” mean in the passage?',
       answer: utClean(v.definition), distractors: defs,
       explain: 'In this passage “' + utVocabWord(v) + '” means ' + utClean(v.definition) + '.',
-      teaches: utVocabWord(v), ref: v.id || ''
+      teaches: utVocabWord(v), refWord: utVocabWord(v), ref: v.id || ''
     };
     if (!utEnoughOptions(s, spec.opts)) continue;
     items.push(utMakeItem(rng, s));
@@ -4654,14 +4925,14 @@ function utGenerateTest(opts){
     }
   }
   if (total < 20){
-    const have = {};
-    p1.items.forEach(function(it){ have[utLc(it.teaches)] = 1; });
-    const extraC = utBuildCloze(rng, ctx, target[1] + (20 - total));
-    for (let i = 0; i < extraC.items.length && total < 20; i++){
-      const it = extraC.items[i];
-      if (have[utLc(it.teaches)]) continue;
-      have[utLc(it.teaches)] = 1;
-      p1.items.push(it); p1.passage.push(extraC.passage[i]); total++;
+    // Rebuild the cloze as ONE larger, still-continuous passage (rather than
+    // stitching a second passage on, which would restart gap numbering).
+    const need = p1.items.length + (20 - total);
+    const bigger = utBuildCloze(rng, ctx, need);
+    if (bigger.items.length > p1.items.length){
+      total += (bigger.items.length - p1.items.length);
+      p1.items = bigger.items;
+      p1.passage = bigger.passage;
     }
   }
   if (total < 20){
@@ -4867,11 +5138,20 @@ function applyRoleplayAccess(allowed){
 const UT = { test:null, answers:[], flags:{}, idx:0, mode:'idle', timed:false,
              left:0, tick:null, reviewing:false, startedAt:0, retryOf:null };
 
+/* Official best = EXAM MODE only (this is what the tracker reports). */
 function utBestKey(){ return 'lue_utbest_' + (AUTH.name || 'anon'); }
 function utBestAll(){
   try { return JSON.parse(localStorage.getItem(utBestKey()) || '{}'); } catch(e){ return {}; }
 }
 function utBestSave(o){ try { localStorage.setItem(utBestKey(), JSON.stringify(o)); } catch(e){} }
+
+/* Practice best = kept separately, shown for the learner's own reference,
+ * never counted as the official best and never synced to the teacher. */
+function utPracticeKey(){ return 'lue_utpractice_' + (AUTH.name || 'anon'); }
+function utPracticeAll(){
+  try { return JSON.parse(localStorage.getItem(utPracticeKey()) || '{}'); } catch(e){ return {}; }
+}
+function utPracticeSave(o){ try { localStorage.setItem(utPracticeKey(), JSON.stringify(o)); } catch(e){} }
 
 function utPct(n, d){ return d ? Math.round(n / d * 100) : 0; }
 function utBand(p){ return p >= 80 ? 3 : p >= 60 ? 2 : p > 0 ? 1 : 0; }
@@ -4887,6 +5167,7 @@ function renderUnitTest(){
   renderCefrRow('ut-cefr-row');
   const spec = utLevelSpec(activeLevel);
   const best = utBestAll();
+  const practice = utPracticeAll();
   const b = best[activeLevel];
 
   const cells = BTN_BANDS.map(function(lv){
@@ -4896,7 +5177,9 @@ function renderUnitTest(){
       '<div class="bd">' + (r ? (r.score + '/' + r.total) : 'not tried') + '</div></div>';
   }).join('');
 
-  const ring = utRingSvg(b ? b.pct : 0, b ? 'YOUR BEST' : 'NO SCORE YET');
+  const ring = utRingSvg(b ? b.pct : 0, b ? 'EXAM BEST' : 'NO SCORE YET');
+
+  const pRow = BTN_BANDS.filter(function(lv){ return practice[lv]; });
 
   $('ut-body-wrap').innerHTML =
     '<div class="ut-hero"><div>' +
@@ -4907,7 +5190,16 @@ function renderUnitTest(){
       ' minutes · ' + spec.opts + ' options per question</p>' +
     '</div>' + ring + '</div>' +
     '<div class="ut-bestgrid">' + cells + '</div>' +
-    '<p class="up-hint" style="margin:2px 0 16px">Your best score at each level. Change the level above to test yourself higher.</p>' +
+    '<p class="up-hint" style="margin:2px 0 4px"><b>Best score</b> tracks your highest result in <b>⏱ Exam mode</b> only, at each level. ' +
+    'Practice-mode runs are shown separately below and never change your best. Change the level above to test yourself higher.</p>' +
+    (pRow.length
+      ? '<div class="ut-bestgrid" style="margin-top:8px">' + BTN_BANDS.map(function(lv){
+          const r = practice[lv];
+          return '<div class="ut-best' + (r ? '' : '') + '" style="background:#fbfaf7">' +
+            '<div class="bl">' + lv + '</div><div class="bv" style="color:var(--ink-soft)">' + (r ? r.pct + '%' : '—') + '</div>' +
+            '<div class="bd">' + (r ? 'practice' : '—') + '</div></div>';
+        }).join('') + '</div>'
+      : '') +
     '<div class="ut-modes">' +
       '<button class="ut-mode' + (UT.timed ? '' : ' on') + '" type="button" data-timed="0">' +
         '<b>📖 Practice</b><span>No clock. Check each answer as you go.</span></button>' +
@@ -4949,14 +5241,58 @@ function utBuildPaper(seed){
   });
 }
 
+/* A signature of a paper's actual content, so a "new test" can be checked
+ * for being genuinely different from the previous one. */
+function utPaperSignature(t){
+  if (!t || !t.items) return '';
+  return t.items.map(function(it){
+    return (it.type || '') + ':' + utLc(it.answer != null && it.options ? it.options[it.answer] : (it.teaches || ''));
+  }).sort().join('|');
+}
+
+/* How many tests the learner has generated at each level (drives the
+ * "first test uses the fullest upgrade material" rule). */
+function utCountKey(){ return 'lue_utcount_' + (AUTH.name || 'anon'); }
+function utCounts(){ try { return JSON.parse(localStorage.getItem(utCountKey()) || '{}'); } catch(e){ return {}; } }
+function utBumpCount(level){
+  const c = utCounts(); c[level] = (c[level] || 0) + 1;
+  try { localStorage.setItem(utCountKey(), JSON.stringify(c)); } catch(e){}
+  return c[level];
+}
+
 function utStart(seed){
-  const t = utBuildPaper(seed || ((Math.random() * 0xffffffff) >>> 0));
+  const counts = utCounts();
+  const firstAtLevel = !counts[activeLevel];
+
+  let t;
+  if (seed){
+    t = utBuildPaper(seed);
+  } else if (firstAtLevel){
+    // FIRST test at this level: a deterministic build seeded from the prompt +
+    // level, so it draws on as much of the recommended upgrade material for
+    // this level as possible and is the same "cornerstone" paper every time
+    // until the learner asks for a new one.
+    t = utBuildPaper(utSeedFromString('first::' + activeLevel + '::' + ((current.meta && current.meta.prompt) || '')));
+  } else {
+    // SUBSEQUENT tests: genuinely new content. Re-roll until the paper differs
+    // from the previous one (same vocab/grammar targets, new passages/items).
+    const prevSig = utPaperSignature(UT.test) || (UT.lastSig || '');
+    t = utBuildPaper((Math.random() * 0xffffffff) >>> 0);
+    let tries = 0;
+    while (tries < 6 && t.total && utPaperSignature(t) === prevSig){
+      t = utBuildPaper((Math.random() * 0xffffffff) >>> 0);
+      tries++;
+    }
+  }
+
   if (!t.total){
     const n = $('ut-note');
     if (n){ n.className = 'tool-note err';
       n.textContent = 'There is not enough upgrade material at ' + activeLevel + ' to build a test yet. Try another level.'; }
     return;
   }
+  utBumpCount(activeLevel);
+  UT.lastSig = utPaperSignature(t);
   UT.test = t; UT.answers = new Array(t.total).fill(-1); UT.flags = {};
   UT.idx = 0; UT.mode = 'running'; UT.reviewing = false; UT.retryOf = null;
   UT.startedAt = Date.now();
@@ -4991,24 +5327,43 @@ function utPartOfItem(t, item){
 function utContextHtml(t, part, item){
   if (!part) return '';
   if (part.n === 1 && part.passage && part.passage.length){
+    const curGap = part.items.indexOf(item) + 1;
     const rows = part.passage.map(function(seg){
-      const here = seg.n === (part.items.indexOf(item) + 1);
+      if (seg.text != null){ return esc(seg.text); }          // plain connecting sentence
+      const here = seg.n === curGap;
       return esc(seg.before) + '<span class="ut-gap' + (here ? ' here' : '') + '">(' + seg.n + ')</span>' + esc(seg.after);
     }).join(' ');
     return '<div class="ut-context"><span class="cl">Read the text</span>' + rows + '</div>';
   }
   if (part.n === 2 && part.lines && part.lines.length){
+    const curGap = part.items.indexOf(item) + 1;
     const rows = part.lines.map(function(l){
-      const here = l.n === (part.items.indexOf(item) + 1);
+      if (l.text != null){                                   // plain context line
+        return '<div><span class="spk">' + esc(l.who) + ':</span> ' + esc(l.text) + '</div>';
+      }
+      const here = l.n === curGap;
       return '<div><span class="spk">' + esc(l.who) + ':</span> ' + esc(l.before) +
         ' <span class="ut-gap' + (here ? ' here' : '') + '">(' + l.n + ')</span> ' + esc(l.after) + '</div>';
     }).join('');
     return '<div class="ut-context"><span class="cl">Conversation</span>' + rows + '</div>';
   }
   if (part.n === 5 && part.passage){
-    return '<div class="ut-context"><span class="cl">Passage</span>' + esc(part.passage) + '</div>';
+    return '<div class="ut-context"><span class="cl">Passage</span>' +
+      utHighlightRef(part.passage, item && item.refWord) + '</div>';
   }
   return '';
+}
+
+/* Escape a passage, then bold the exact word/phrase a reading question
+ * asks the reader to interpret (Q9). Only the referenced span is bolded. */
+function utHighlightRef(passage, refWord){
+  const safe = esc(passage);
+  const ref = utClean(refWord || '');
+  if (!ref) return safe;
+  const hit = utFindWord(passage, ref);
+  if (!hit) return safe;
+  const re = new RegExp('\\b' + utEscRe(hit.text) + '\\b');
+  return safe.replace(re, '<b class="ut-ref">' + esc(hit.text) + '</b>');
 }
 
 /* ---------- the running paper ---------- */
@@ -5038,8 +5393,9 @@ function utRenderRunner(){
         if (i === item.answer) cls += ' right';
         else if (i === UT.answers[UT.idx]) cls += ' wrong';
       } else if (UT.answers[UT.idx] === i) cls += ' sel';
+      const mark = showAnswer ? (i === item.answer ? '✓' : (i === UT.answers[UT.idx] ? '✕' : '')) : '';
       return '<button class="' + cls + '" type="button" data-pick="' + i + '"' + (showAnswer ? ' disabled' : '') +
-        '><span class="ok">' + (i + 1) + '</span><span>Part (' + (i + 1) + ') is wrong</span></button>';
+        '><span class="ok">' + mark + '</span><span>Part (' + (i + 1) + ') is wrong</span></button>';
     }).join('');
   } else {
     optsHtml = item.options.map(function(o, i){
@@ -5048,8 +5404,9 @@ function utRenderRunner(){
         if (i === item.answer) cls += ' right';
         else if (i === UT.answers[UT.idx]) cls += ' wrong';
       } else if (UT.answers[UT.idx] === i) cls += ' sel';
+      const mark = showAnswer ? (i === item.answer ? '✓' : (i === UT.answers[UT.idx] ? '✕' : '')) : '';
       return '<button class="' + cls + '" type="button" data-pick="' + i + '"' + (showAnswer ? ' disabled' : '') +
-        '><span class="ok">' + (i + 1) + '</span><span>' + esc(o) + '</span></button>';
+        '><span class="ok">' + mark + '</span><span>' + esc(o) + '</span></button>';
     }).join('');
   }
 
@@ -5154,32 +5511,51 @@ function utSubmit(auto){
   utStopClock();
   UT.mode = 'done';
   const res = utScore();
-  const best = utBestAll();
-  const prev = best[UT.test.level];
-  res.isBest = !prev || res.pct > prev.pct;
-  if (res.isBest){
-    best[UT.test.level] = { pct:res.pct, score:res.score, total:res.total,
-                            at:Date.now(), paperCode:UT.test.paperCode };
-    utBestSave(best);
+  const exam = !!UT.timed;
+  res.exam = exam;
+
+  if (exam){
+    // Official best — Exam mode only. This is what the tracker reports and
+    // what syncs to the teacher.
+    const best = utBestAll();
+    const prev = best[UT.test.level];
+    res.isBest = !prev || res.pct > prev.pct;
+    if (res.isBest){
+      best[UT.test.level] = { pct:res.pct, score:res.score, total:res.total,
+                              at:Date.now(), paperCode:UT.test.paperCode };
+      utBestSave(best);
+    }
+    utSyncResult(res);
+  } else {
+    // Practice mode — kept separately, never counted as the official best.
+    const pb = utPracticeAll();
+    const prevP = pb[UT.test.level];
+    res.isPracticeBest = !prevP || res.pct > prevP.pct;
+    res.isBest = false;
+    if (res.isPracticeBest){
+      pb[UT.test.level] = { pct:res.pct, score:res.score, total:res.total, at:Date.now() };
+      utPracticeSave(pb);
+    }
   }
+
   UT.lastRes = res; UT.autoEnded = !!auto;
-  utSyncResult(res);
   utRenderResults();
 }
 
 /* Push the result to the teacher's console. Falls back to local-only. */
 async function utSyncResult(res){
   if (!IS_STUDENT) return;
+  if (!res.exam) return;            // only Exam-mode results are recorded on the server
   try {
     await api({ action:'unittest_result', level: UT.test.level, score: res.score,
-                total: res.total, pct: res.pct, paperCode: UT.test.paperCode,
+                total: res.total, pct: res.pct, paperCode: UT.test.paperCode, mode: 'exam',
                 seconds: Math.round((Date.now() - UT.startedAt) / 1000) });
     try { localStorage.removeItem('lue_utpending_' + (AUTH.name || 'anon')); } catch(e){}
   } catch(err){
     try {
       const k = 'lue_utpending_' + (AUTH.name || 'anon');
       const q = JSON.parse(localStorage.getItem(k) || '[]');
-      q.push({ level: UT.test.level, score: res.score, total: res.total, pct: res.pct, at: Date.now() });
+      q.push({ level: UT.test.level, score: res.score, total: res.total, pct: res.pct, mode: 'exam', at: Date.now() });
       localStorage.setItem(k, JSON.stringify(q.slice(-40)));
     } catch(e){}
   }
@@ -5208,7 +5584,9 @@ function utRenderResults(){
       utRingSvg(res.pct, t.level + ' PAPER ' + t.paperCode) +
       '<h2 style="margin-top:12px">' + res.score + ' out of ' + res.total + '</h2>' +
       '<p class="lede" style="margin:4px auto 0;max-width:44ch">' + esc(msg) + '</p>' +
-      (res.isBest ? '<div class="ut-badge">★ New personal best at ' + esc(t.level) + '</div>' : '') +
+      (res.isBest ? '<div class="ut-badge">★ New personal best at ' + esc(t.level) + ' (Exam mode)</div>' : '') +
+      (!res.exam ? '<p class="up-hint" style="margin-top:8px">This was <b>Practice mode</b>, so it does not count towards your official best score. ' +
+        'Take the test in <b>Exam mode</b> to set your best.' + (res.isPracticeBest ? ' (New practice best!)' : '') + '</p>' : '') +
       (UT.autoEnded ? '<p class="up-hint" style="margin-top:8px">Time ran out — unanswered questions were marked wrong.</p>' : '') +
       '<div class="ut-parts">' + bars + '</div>' +
       (weakest && weakest.got < weakest.of
@@ -5297,25 +5675,36 @@ function utPrintPaper(){
     h += '<h2>Part ' + p.n + ' — ' + E(p.title) + '</h2><p class="instr">' + E(p.instruction) + '</p>';
     if (p.n === 1 && p.passage && p.passage.length){
       h += '<div class="ctx">' + p.passage.map(function(s){
+        if (s.text != null) return E(s.text);
         return E(s.before) + '___(' + s.n + ')___' + E(s.after); }).join(' ') + '</div>';
     }
     if (p.n === 2 && p.lines){
       h += '<div class="ctx">' + p.lines.map(function(l){
+        if (l.text != null) return '<b>' + E(l.who) + ':</b> ' + E(l.text);
         return '<b>' + E(l.who) + ':</b> ' + E(l.before) + ' ___(' + l.n + ')___ ' + E(l.after); }).join('<br>') + '</div>';
     }
-    if (p.n === 5 && p.passage) h += '<div class="ctx">' + E(p.passage) + '</div>';
+    if (p.n === 5 && p.passage){
+      let refs = {};
+      p.items.forEach(function(it){ if (it.refWord) refs[it.refWord] = 1; });
+      let pass = E(p.passage);
+      Object.keys(refs).forEach(function(w){
+        const hit = utFindWord(p.passage, w);
+        if (hit){ pass = pass.replace(new RegExp('\\b' + utEscRe(hit.text) + '\\b'), '<b>' + E(hit.text) + '</b>'); }
+      });
+      h += '<div class="ctx">' + pass + '</div>';
+    }
 
     p.items.forEach(function(it){
       h += '<div class="q">';
       if (it.type === 'errorid'){
         h += '<span class="s">' + it.n + '.</span> <span class="seg">' +
           it.segments.map(function(s, i){ return '<sup>(' + (i + 1) + ')</sup><u>' + E(s) + '</u>'; }).join(' ') + '</span>' +
-          '<ol class="o">' + it.options.map(function(o, i){ return '<li>' + (i + 1) + '. Part (' + (i + 1) + ')</li>'; }).join('') + '</ol>';
+          '<ol class="o">' + it.options.map(function(o, i){ return '<li>' + utLetter(i) + '. Part (' + (i + 1) + ')</li>'; }).join('') + '</ol>';
       } else {
         h += '<span class="s">' + it.n + '.</span> ' + (it.type === 'transform'
           ? 'Situation:<span class="sit">' + E(it.stem) + '</span>'
           : E(it.stem || '')) +
-          '<ol class="o">' + it.options.map(function(o, i){ return '<li>' + (i + 1) + '. ' + E(o) + '</li>'; }).join('') + '</ol>';
+          '<ol class="o">' + it.options.map(function(o, i){ return '<li>' + utLetter(i) + '. ' + E(o) + '</li>'; }).join('') + '</ol>';
       }
       h += '</div>';
     });
@@ -5324,7 +5713,7 @@ function utPrintPaper(){
   h += '<div class="key"><h2 style="border:none">Answer key &amp; teaching notes — paper ' + E(t.paperCode) + '</h2>' +
     '<table><tr><th>#</th><th>Ans</th><th>Tests</th><th>Why</th></tr>' +
     t.items.map(function(it){
-      return '<tr><td>' + it.n + '</td><td><b>' + (it.answer + 1) + '</b></td><td>' +
+      return '<tr><td>' + it.n + '</td><td><b>' + utLetter(it.answer) + '</b></td><td>' +
         E(it.teaches || '') + '</td><td>' + E(it.explain || '') + '</td></tr>'; }).join('') +
     '</table><p style="font-size:.8rem;color:#666;margin-top:12px">Regenerate a fresh paper (different items, same targets) ' +
     'from the Unit Test tab. Paper code ' + E(t.paperCode) + ' reproduces this exact version.</p></div></body></html>';
@@ -5344,9 +5733,10 @@ async function refreshUnitScores(){
     const out = await api({ action:'unittest_scores' });
     rows = out.students || [];
   } catch(err){
-    box.innerHTML = '<div class="tool-note err" style="display:block">Unit test results are not on the server yet. ' +
-      'Add the <b>unittest_result</b> and <b>unittest_scores</b> actions to the Apps Script backend to collect them ' +
-      'across devices. Until then each student\u2019s best scores are kept on their own device and shown on their Unit Test tab.</div>';
+    box.innerHTML = '<div class="tool-note err" style="display:block">Could not load unit test results from the server just now. ' +
+      'If this persists, check that the Apps Script backend is the current version (it must handle the ' +
+      '<b>unittest_result</b> and <b>unittest_scores</b> actions). Until it loads, each student\u2019s best scores ' +
+      'are kept on their own device and shown on their Unit Test tab.</div>';
     return;
   }
   if (!rows.length){
@@ -5365,12 +5755,11 @@ async function refreshUnitScores(){
   }).join('');
   box.innerHTML = '<div class="table-scroll"><table class="ut-matrix"><thead>' + head +
     '</thead><tbody>' + body + '</tbody></table></div>' +
-    '<p class="up-hint" style="margin:10px 0 0">Each cell is the student\u2019s <b>highest</b> unit test score at that CEFR level.</p>';
+    '<p class="up-hint" style="margin:10px 0 0">Each cell is the student\u2019s <b>highest Exam-mode</b> unit test score at that CEFR level. Practice-mode runs are not counted.</p>';
 }
 
 /* ---------------- startup ---------------- */
 boot();
-
 
 })();
 </script>
