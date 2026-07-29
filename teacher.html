@@ -3545,7 +3545,7 @@ function utRng(seed){
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-function utPick(rng, arr){ return arr[Math.floor(rng() * arr.length)]; }
+function utPickOne(rng, arr){ return arr[Math.floor(rng() * arr.length)]; }  // renamed from utPick to avoid collision with the answer-select handler utPick(i)
 function utLetter(i){ return String.fromCharCode(65 + (i % 26)); }  // 0->A, 1->B …  (printable paper only; screen shows no labels)
 function utShuffle(rng, arr){
   const a = arr.slice();
@@ -4426,7 +4426,7 @@ function utBuildDialogue(rng, ctx, want){
   let turn = 0;                                   // 0 = names[0], 1 = names[1]
   const say = function(text){ lines.push({ who: names[turn % 2], text: utContract(text) }); turn++; };
 
-  say(utPick(rng, UT_DLG_OPENERS));               // context line (no gap)
+  say(utPickOne(rng, UT_DLG_OPENERS));               // context line (no gap)
 
   for (let i = 0; i < pool.length && items.length < want; i++){
     const g = pool[i];
@@ -4460,7 +4460,7 @@ function utBuildDialogue(rng, ctx, want){
   }
 
   if (!items.length) return { items: [], lines: [], speakers: names };
-  say(utPick(rng, UT_DLG_CLOSERS));               // context line (no gap)
+  say(utPickOne(rng, UT_DLG_CLOSERS));               // context line (no gap)
 
   return { items: items, lines: lines, speakers: names };
 }
@@ -4527,7 +4527,7 @@ function utReword(rng, sentence, protectPhrase){
   order.forEach(function(rule){
     if (changes >= 4) return;                    // don't over-transform
     if (!rule[0].test(s)) { rule[0].lastIndex = 0; return; }
-    const rep = utPick(rng, rule[1]);
+    const rep = utPickOne(rng, rule[1]);
     s = s.replace(rule[0], function(){ return rep; });
     rule[0].lastIndex = 0;
     changes++;
