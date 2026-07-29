@@ -513,13 +513,6 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .ut-best.has .bv{color:var(--accent);}
 .ut-best .bd{font-size:.66rem;color:var(--ink-faint);margin-top:1px;}
 
-.ut-modes{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px;}
-.ut-mode{flex:1;min-width:190px;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;font-family:"Inter",sans-serif;transition:.15s;}
-.ut-mode:hover{border-color:var(--accent-soft);background:var(--accent-wash);}
-.ut-mode.on{border-color:var(--gold);background:var(--gold-wash);}
-.ut-mode b{display:block;font-size:.95rem;color:var(--ink);}
-.ut-mode span{font-size:.8rem;color:var(--ink-soft);}
-
 /* running test */
 .ut-shell{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
 .ut-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:#fffcf4;border-bottom:1px solid var(--line);flex-wrap:wrap;}
@@ -956,7 +949,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 
       <div class="pane">
         <div class="pane-title">Unit test results <button class="ghost" type="button" id="ut-scores-refresh">↻ Refresh</button></div>
-        <p class="up-hint" style="margin:0 0 10px">The highest <b>Exam-mode</b> unit test score each student has reached at every CEFR level. Practice runs are not counted.</p>
+        <p class="up-hint" style="margin:0 0 10px">The highest unit test score each student has reached at every CEFR level.</p>
         <div id="ut-scores-body"><p class="up-hint" style="margin:0">Open this tab or press Refresh to load results.</p></div>
       </div>
 
@@ -5065,34 +5058,55 @@ function utGenerateTest(opts){
   const p4 = utBuildErrorId(rng, ctx, target[4]);
   const p5 = utBuildReading(rng, ctx, target[5]);
 
-  // Top up to 20 with whichever generator still has capacity.
+  // Top up toward 20 while keeping the paper balanced. No single part may
+  // exceed a cap, so the exam never becomes half one question type — a
+  // balanced 14-question paper beats a lopsided 20-question one.
+  const CAP = { 1:6, 2:5, 3:6, 4:5, 5:6 };
   let total = p1.items.length + p2.items.length + p3.items.length + p4.items.length + p5.items.length;
-  if (total < 20){
-    const extraT = utBuildTransform(rng, ctx, target[3] + (20 - total));
-    for (let i = p3.items.length; i < extraT.items.length && total < 20; i++){
-      p3.items.push(extraT.items[i]); total++;
-    }
-  }
-  if (total < 20){
-    // Rebuild the cloze as ONE larger, still-continuous passage (rather than
-    // stitching a second passage on, which would restart gap numbering).
-    const need = p1.items.length + (20 - total);
-    const bigger = utBuildCloze(rng, ctx, need);
-    if (bigger.items.length > p1.items.length){
+
+  const growCloze = function(){
+    if (total >= 20 || p1.items.length >= CAP[1]) return false;
+    const bigger = utBuildCloze(rng, ctx, p1.items.length + 1);
+    if (bigger.items.length > p1.items.length && bigger.items.length <= CAP[1]){
       total += (bigger.items.length - p1.items.length);
-      p1.items = bigger.items;
-      p1.passage = bigger.passage;
+      p1.items = bigger.items; p1.passage = bigger.passage;
+      return true;
     }
-  }
-  if (total < 20){
-    const have = {};
-    p5.items.forEach(function(it){ have[utLc(it.stem)] = 1; });
-    const extraR = utBuildReading(rng, ctx, target[5] + (20 - total));
-    for (let i = 0; i < extraR.items.length && total < 20; i++){
-      if (have[utLc(extraR.items[i].stem)]) continue;
-      have[utLc(extraR.items[i].stem)] = 1;
-      p5.items.push(extraR.items[i]); total++;
+    return false;
+  };
+  const growReading = function(){
+    if (total >= 20 || p5.items.length >= CAP[5]) return false;
+    const have = {}; p5.items.forEach(function(it){ have[utLc(it.stem)] = 1; });
+    const extraR = utBuildReading(rng, ctx, p5.items.length + 2);
+    for (let i = 0; i < extraR.items.length; i++){
+      if (total >= 20 || p5.items.length >= CAP[5]) break;
+      const it = extraR.items[i];
+      if (have[utLc(it.stem)]) continue;
+      have[utLc(it.stem)] = 1;
+      if (p5.items.indexOf(it) < 0){ p5.items.push(it); p5.passage = extraR.passage || p5.passage; total++; return true; }
     }
+    return false;
+  };
+  const growTransform = function(){
+    if (total >= 20 || p3.items.length >= CAP[3]) return false;
+    const have = {}; p3.items.forEach(function(it){ have[utLc(it.options[it.answer] + '|' + it.stem)] = 1; });
+    const extraT = utBuildTransform(rng, ctx, p3.items.length + 3);
+    for (let i = 0; i < extraT.items.length; i++){
+      if (total >= 20 || p3.items.length >= CAP[3]) break;
+      const it = extraT.items[i];
+      const key = utLc(it.options[it.answer] + '|' + it.stem);
+      if (have[key]) continue;
+      have[key] = 1;
+      p3.items.push(it); total++; return true;
+    }
+    return false;
+  };
+  const growers = [growCloze, growReading, growTransform];
+  let gi = 0, stagnant = 0;
+  while (total < 20 && stagnant < growers.length){
+    const grew = growers[gi % growers.length]();
+    stagnant = grew ? 0 : stagnant + 1;
+    gi++;
   }
 
   const parts = [];
@@ -5284,23 +5298,16 @@ function applyRoleplayAccess(allowed){
  * Teacher: build a paper, preview it, print it with an answer key,
  *          and see every student's best score at every CEFR level.
  * ================================================================= */
-const UT = { test:null, answers:[], flags:{}, idx:0, mode:'idle', timed:false,
+const UT = { test:null, answers:[], flags:{}, idx:0, mode:'idle', timed:true,
              left:0, tick:null, reviewing:false, startedAt:0, retryOf:null };
 
-/* Official best = EXAM MODE only (this is what the tracker reports). */
+/* Best score per level (the exam is the only test, so this is simply the
+ * student's best result at each CEFR level). */
 function utBestKey(){ return 'lue_utbest_' + (AUTH.name || 'anon'); }
 function utBestAll(){
   try { return JSON.parse(localStorage.getItem(utBestKey()) || '{}'); } catch(e){ return {}; }
 }
 function utBestSave(o){ try { localStorage.setItem(utBestKey(), JSON.stringify(o)); } catch(e){} }
-
-/* Practice best = kept separately, shown for the learner's own reference,
- * never counted as the official best and never synced to the teacher. */
-function utPracticeKey(){ return 'lue_utpractice_' + (AUTH.name || 'anon'); }
-function utPracticeAll(){
-  try { return JSON.parse(localStorage.getItem(utPracticeKey()) || '{}'); } catch(e){ return {}; }
-}
-function utPracticeSave(o){ try { localStorage.setItem(utPracticeKey(), JSON.stringify(o)); } catch(e){} }
 
 function utPct(n, d){ return d ? Math.round(n / d * 100) : 0; }
 function utBand(p){ return p >= 80 ? 3 : p >= 60 ? 2 : p > 0 ? 1 : 0; }
@@ -5313,10 +5320,10 @@ function renderUnitTest(){
     return;
   }
   if (UT.mode === 'running' || UT.mode === 'review'){ utRenderRunner(); return; }
+  UT.timed = true;                              // there is only ONE test per level: the timed exam
   renderCefrRow('ut-cefr-row');
   const spec = utLevelSpec(activeLevel);
   const best = utBestAll();
-  const practice = utPracticeAll();
   const b = best[activeLevel];
 
   const cells = BTN_BANDS.map(function(lv){
@@ -5326,44 +5333,25 @@ function renderUnitTest(){
       '<div class="bd">' + (r ? (r.score + '/' + r.total) : 'not tried') + '</div></div>';
   }).join('');
 
-  const ring = utRingSvg(b ? b.pct : 0, b ? 'EXAM BEST' : 'NO SCORE YET');
-
-  const pRow = BTN_BANDS.filter(function(lv){ return practice[lv]; });
+  const ring = utRingSvg(b ? b.pct : 0, b ? 'YOUR BEST' : 'NO SCORE YET');
 
   $('ut-body-wrap').innerHTML =
     '<div class="ut-hero"><div>' +
       '<h3>' + esc(activeLevel) + ' Unit Test · ' + esc(spec.label) + '</h3>' +
-      '<p>20 questions built from your own essay: the words and structures you were told to upgrade. ' +
+      '<p>One timed exam at each CEFR level, built from your own essay: the words and structures you were told to upgrade. ' +
       'Vocabulary, grammar in context, sentence transformation, error spotting and reading.</p>' +
-      '<p style="margin-top:6px;color:var(--ink-faint);font-size:.84rem">Suggested time ' + spec.minutes +
-      ' minutes · ' + spec.opts + ' options per question</p>' +
+      '<p style="margin-top:6px;color:var(--ink-faint);font-size:.84rem">⏱ ' + spec.minutes +
+      '-minute timer · ' + spec.opts + ' options per question · answers revealed at the end</p>' +
     '</div>' + ring + '</div>' +
     '<div class="ut-bestgrid">' + cells + '</div>' +
-    '<p class="up-hint" style="margin:2px 0 4px"><b>Best score</b> tracks your highest result in <b>⏱ Exam mode</b> only, at each level. ' +
-    'Practice-mode runs are shown separately below and never change your best. Change the level above to test yourself higher.</p>' +
-    (pRow.length
-      ? '<div class="ut-bestgrid" style="margin-top:8px">' + BTN_BANDS.map(function(lv){
-          const r = practice[lv];
-          return '<div class="ut-best' + (r ? '' : '') + '" style="background:#fbfaf7">' +
-            '<div class="bl">' + lv + '</div><div class="bv" style="color:var(--ink-soft)">' + (r ? r.pct + '%' : '—') + '</div>' +
-            '<div class="bd">' + (r ? 'practice' : '—') + '</div></div>';
-        }).join('') + '</div>'
-      : '') +
-    '<div class="ut-modes">' +
-      '<button class="ut-mode' + (UT.timed ? '' : ' on') + '" type="button" data-timed="0">' +
-        '<b>📖 Practice</b><span>No clock. Check each answer as you go.</span></button>' +
-      '<button class="ut-mode' + (UT.timed ? ' on' : '') + '" type="button" data-timed="1">' +
-        '<b>⏱ Exam mode</b><span>' + spec.minutes + '-minute timer, answers revealed at the end.</span></button>' +
-    '</div>' +
-    '<button class="main" type="button" id="ut-start">' + (b ? '↻ Take a new test' : '▶ Start the test') + '</button>' +
+    '<p class="up-hint" style="margin:2px 0 12px">Your <b>best score</b> at each level. Retaking a level replaces your score only when you beat it. ' +
+    'Change the level above to sit a harder paper.</p>' +
+    '<button class="main" type="button" id="ut-start">' + (b ? '↻ Retake this exam' : '▶ Start the exam') + '</button>' +
     (IS_STUDENT ? '' :
       '<div class="file-row" style="margin-top:14px">' +
       '<button class="ghost" type="button" id="ut-print">🖨 Open printable paper + answer key</button></div>') +
     '<div class="tool-note" id="ut-note"></div>';
 
-  Array.prototype.forEach.call(document.querySelectorAll('.ut-mode'), function(m){
-    m.addEventListener('click', function(){ UT.timed = m.dataset.timed === '1'; renderUnitTest(); });
-  });
   $('ut-start').addEventListener('click', function(){ utStart(); });
   const pb = $('ut-print'); if (pb) pb.addEventListener('click', utPrintPaper);
 }
@@ -5399,91 +5387,62 @@ function utPaperSignature(t){
   }).sort().join('|');
 }
 
-/* Per-level record of how many papers have been built and the SET of paper
- * signatures already shown to this learner (in either mode). A new paper must
- * not match any signature already seen, so an Exam-mode paper is always a
- * fresh test the student has not already done in Practice, and vice versa. */
-function utCountKey(){ return 'lue_utcount_' + (AUTH.name || 'anon'); }
-function utCounts(){ try { return JSON.parse(localStorage.getItem(utCountKey()) || '{}'); } catch(e){ return {}; } }
-function utBumpCount(level){
-  const c = utCounts(); c[level] = (c[level] || 0) + 1;
-  try { localStorage.setItem(utCountKey(), JSON.stringify(c)); } catch(e){}
-  return c[level];
+/* Score a paper for quality so we can pick the best of several candidate
+ * builds for the one exam at each level. Rewards: more items (up to 20), and
+ * good spread across the five parts (each part present, none dominating). */
+function utPaperQuality(t){
+  if (!t || !t.total) return -1;
+  let q = Math.min(t.total, 20) * 2;
+  const byPart = {};
+  t.parts.forEach(function(p){ byPart[p.n] = (p.items || []).length; });
+  for (let n = 1; n <= 5; n++){ if (byPart[n]) q += 6; }        // reward each part that appears
+  // small penalty if any single part carries more than half the paper
+  t.parts.forEach(function(p){ if ((p.items || []).length > t.total / 2) q -= 4; });
+  return q;
 }
-function utSeenKey(){ return 'lue_utseen_' + (AUTH.name || 'anon'); }
-function utSeenAll(){ try { return JSON.parse(localStorage.getItem(utSeenKey()) || '{}'); } catch(e){ return {}; } }
-function utSeenList(level){ const a = utSeenAll(); return a[level] || []; }
-function utMarkSeen(level, sig){
-  if (!sig) return;
-  const a = utSeenAll();
-  const list = a[level] || [];
-  if (list.indexOf(sig) < 0){ list.push(sig); a[level] = list.slice(-40); }  // keep last 40 per level
-  try { localStorage.setItem(utSeenKey(), JSON.stringify(a)); } catch(e){}
+
+/* Build the ONE exam for the current level. There is a single test per CEFR
+ * level (the timed exam), so it is deterministic — the same well-formed paper
+ * every time — and chosen as the best of several candidate builds. */
+function utBuildExam(){
+  const promptKey = (current.meta && current.meta.prompt) || '';
+  // A handful of deterministic seeds derived from the level + prompt, so the
+  // exam is reproducible yet we can pick the strongest candidate.
+  const seeds = [];
+  for (let i = 0; i < 8; i++){
+    seeds.push(utSeedFromString('exam::' + activeLevel + '::' + promptKey + '::' + i));
+  }
+  let best = null, bestQ = -1;
+  seeds.forEach(function(sd){
+    const cand = utBuildPaper(sd);
+    const q = utPaperQuality(cand);
+    if (q > bestQ){ bestQ = q; best = cand; }
+  });
+  return best;
 }
 
 function utStart(seed){
-  const counts = utCounts();
-  const firstAtLevel = !counts[activeLevel];
-  const seen = utSeenList(activeLevel);
-  const seenSet = {}; seen.forEach(function(s){ seenSet[s] = 1; });
-
-  let t = null;
-
-  if (seed){
-    t = utBuildPaper(seed);
-  } else if (firstAtLevel){
-    // FIRST ever test at this level: a full-coverage build seeded from the
-    // prompt + level so it uses as much of the recommended upgrade material
-    // as possible.
-    t = utBuildPaper(utSeedFromString('first::' + activeLevel + '::' + ((current.meta && current.meta.prompt) || '')));
-  }
-
-  // Whether it's a "new test", an Exam after Practice, or the first build
-  // collided with something already seen, roll fresh papers until we get one
-  // whose content the student has NOT already been shown.
-  if (!t || (!seed && seenSet[utPaperSignature(t)])){
-    let best = t, bestNew = false, tries = 0;
-    while (tries < 24){
-      const cand = utBuildPaper((Math.random() * 0xffffffff) >>> 0);
-      if (!cand.total){ tries++; continue; }
-      const sig = utPaperSignature(cand);
-      if (!seenSet[sig]){ best = cand; bestNew = true; break; }
-      if (!best) best = cand;                      // fallback if everything collides
-      tries++;
-    }
-    t = best;
-    if (!bestNew && Object.keys(seenSet).length){
-      // Material is too limited to make a distinct paper — tell the student.
-      const n = $('ut-note');
-      if (n){ n.className = 'tool-note';
-        n.textContent = 'There is limited upgrade material at ' + activeLevel +
-          ', so this test reuses some questions you have seen. Add more upgrades or try another level for fresh content.'; }
-    }
-  }
+  UT.timed = true;                             // the only mode is the timed exam
+  const t = seed ? utBuildPaper(seed) : utBuildExam();
 
   if (!t || !t.total){
     const n = $('ut-note');
     if (n){ n.className = 'tool-note err';
-      n.textContent = 'There is not enough upgrade material at ' + activeLevel + ' to build a test yet. Try another level.'; }
+      n.textContent = 'There is not enough upgrade material at ' + activeLevel + ' to build the exam yet. Try another level.'; }
     return;
   }
 
-  const sig = utPaperSignature(t);
-  utBumpCount(activeLevel);
-  utMarkSeen(activeLevel, sig);
-  UT.lastSig = sig;
+  UT.lastSig = utPaperSignature(t);
   UT.test = t; UT.answers = new Array(t.total).fill(-1); UT.flags = {};
   UT.idx = 0; UT.mode = 'running'; UT.reviewing = false; UT.retryOf = null;
   UT.startedAt = Date.now();
-  UT.left = UT.timed ? t.minutes * 60 : 0;
+  UT.left = t.minutes * 60;
   utStopClock();
-  if (UT.timed){
-    UT.tick = setInterval(function(){
-      UT.left--;
-      if (UT.left <= 0){ utStopClock(); utSubmit(true); }
-      else utPaintClock();
-    }, 1000);
-  }
+  UT.tick = setInterval(function(){
+    UT.left--;
+    if (UT.left <= 0){ utStopClock(); utSubmit(true); }
+    else utPaintClock();
+  }, 1000);
   utRenderRunner();
 }
 function utStopClock(){ if (UT.tick){ clearInterval(UT.tick); UT.tick = null; } }
@@ -5663,13 +5622,8 @@ function utPick(i){
   if (UT.reviewing) return;
   UT.answers[UT.idx] = i;
   if (navigator.vibrate){ try { navigator.vibrate(8); } catch(e){} }
-  if (!UT.timed){
-    utRenderRunner();     // practice mode: reveal the coaching straight away
-  } else if (UT.idx < UT.test.total - 1){
-    UT.idx++; utRenderRunner();
-  } else {
-    utRenderRunner();
-  }
+  if (UT.idx < UT.test.total - 1){ UT.idx++; }   // exam: advance; answers are revealed at the end
+  utRenderRunner();
 }
 
 /* ---------- scoring ---------- */
@@ -5690,12 +5644,12 @@ function utSubmit(auto){
   utStopClock();
   UT.mode = 'done';
   const res = utScore();
-  const exam = !!UT.timed;
-  res.exam = exam;
+  res.exam = true;
+  res.isRetry = !!UT.retryOf;
 
-  if (exam){
-    // Official best — Exam mode only. This is what the tracker reports and
-    // what syncs to the teacher.
+  // The optional "retry the questions you missed" run is a review aid — it does
+  // not change the official best score and is not sent to the teacher.
+  if (!res.isRetry){
     const best = utBestAll();
     const prev = best[UT.test.level];
     res.isBest = !prev || res.pct > prev.pct;
@@ -5705,16 +5659,6 @@ function utSubmit(auto){
       utBestSave(best);
     }
     utSyncResult(res);
-  } else {
-    // Practice mode — kept separately, never counted as the official best.
-    const pb = utPracticeAll();
-    const prevP = pb[UT.test.level];
-    res.isPracticeBest = !prevP || res.pct > prevP.pct;
-    res.isBest = false;
-    if (res.isPracticeBest){
-      pb[UT.test.level] = { pct:res.pct, score:res.score, total:res.total, at:Date.now() };
-      utPracticeSave(pb);
-    }
   }
 
   UT.lastRes = res; UT.autoEnded = !!auto;
@@ -5724,7 +5668,6 @@ function utSubmit(auto){
 /* Push the result to the teacher's console. Falls back to local-only. */
 async function utSyncResult(res){
   if (!IS_STUDENT) return;
-  if (!res.exam) return;            // only Exam-mode results are recorded on the server
   try {
     await api({ action:'unittest_result', level: UT.test.level, score: res.score,
                 total: res.total, pct: res.pct, paperCode: UT.test.paperCode, mode: 'exam',
@@ -5763,9 +5706,8 @@ function utRenderResults(){
       utRingSvg(res.pct, t.level + ' PAPER ' + t.paperCode) +
       '<h2 style="margin-top:12px">' + res.score + ' out of ' + res.total + '</h2>' +
       '<p class="lede" style="margin:4px auto 0;max-width:44ch">' + esc(msg) + '</p>' +
-      (res.isBest ? '<div class="ut-badge">★ New personal best at ' + esc(t.level) + ' (Exam mode)</div>' : '') +
-      (!res.exam ? '<p class="up-hint" style="margin-top:8px">This was <b>Practice mode</b>, so it does not count towards your official best score. ' +
-        'Take the test in <b>Exam mode</b> to set your best.' + (res.isPracticeBest ? ' (New practice best!)' : '') + '</p>' : '') +
+      (res.isBest ? '<div class="ut-badge">★ New personal best at ' + esc(t.level) + '</div>' : '') +
+      (res.isRetry ? '<p class="up-hint" style="margin-top:8px">This was a review of your missed questions — it does not change your best score.</p>' : '') +
       (UT.autoEnded ? '<p class="up-hint" style="margin-top:8px">Time ran out — unanswered questions were marked wrong.</p>' : '') +
       '<div class="ut-parts">' + bars + '</div>' +
       (weakest && weakest.got < weakest.of
@@ -5778,7 +5720,7 @@ function utRenderResults(){
       '<button class="ghost" type="button" id="ut-review">🔍 Review all ' + res.total + ' answers</button>' +
       (missed.length ? '<button class="ghost" type="button" id="ut-fix">🎯 Redo my ' + missed.length + ' misses</button>' : '') +
       '<span class="grow"></span>' +
-      '<button class="main" type="button" id="ut-again" style="width:auto;margin-top:0;min-width:150px">↻ New test</button>' +
+      '<button class="main" type="button" id="ut-again" style="width:auto;margin-top:0;min-width:150px">↻ Retake exam</button>' +
     '</div></div>' +
     '<div class="file-row" style="margin-top:14px">' +
       '<button class="ghost" type="button" id="ut-done">← Back to Unit Test home</button>' +
@@ -5934,7 +5876,7 @@ async function refreshUnitScores(){
   }).join('');
   box.innerHTML = '<div class="table-scroll"><table class="ut-matrix"><thead>' + head +
     '</thead><tbody>' + body + '</tbody></table></div>' +
-    '<p class="up-hint" style="margin:10px 0 0">Each cell is the student\u2019s <b>highest Exam-mode</b> unit test score at that CEFR level. Practice-mode runs are not counted.</p>';
+    '<p class="up-hint" style="margin:10px 0 0">Each cell is the student\u2019s <b>highest</b> unit test score at that CEFR level.</p>';
 }
 
 /* ---------------- startup ---------------- */
