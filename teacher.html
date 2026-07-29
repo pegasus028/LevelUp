@@ -4428,33 +4428,33 @@ function utBuildDialogue(rng, ctx, want){
 
   say(utPickOne(rng, UT_DLG_OPENERS));               // context line (no gap)
 
+  const usedSent = {};
   for (let i = 0; i < pool.length && items.length < want; i++){
     const g = pool[i];
     const up = utClean(g.replacement);
-    const orig = utClean(g.original);
     if (!up || up.split(/\s+/).length < 5) continue;
-    const chunk = utUpgradeChunk(orig, up);
-    if (!chunk) continue;
-    const d = utChunkDistractors(chunk.text).filter(function(x){ return utLc(x) !== utLc(chunk.text); });
-    if (d.length < spec.opts - 1) continue;
+    if (usedSent[utLc(up)]) continue;
+
+    // A clean, guaranteed-grammatical gap: the finite lexical verb, with the
+    // answer agreeing with its subject and every distractor a form that does
+    // NOT fit (wrong agreement or wrong tense).
+    const gap = utDialogueGap(up);
+    if (!gap || gap.distractors.length < spec.opts - 1) continue;
+    usedSent[utLc(up)] = 1;
 
     const s = {
       type: 'dialogue', part: 2,
-      answer: utContract(chunk.text), distractors: d.slice(0, spec.opts - 1).map(utContract),
-      explain: (g.topic ? g.topic + ': ' : '') + 'the sentence needs “' + utContract(chunk.text) + '”. ' +
-               (g.subTopic ? g.subTopic + '.' : ''),
-      teaches: g.topic || 'grammar', ref: g.id || ''
+      answer: gap.answer, distractors: gap.distractors.slice(0, spec.opts - 1),
+      explain: gap.explain,
+      teaches: gap.teaches, ref: g.id || ''
     };
     if (!utEnoughOptions(s, spec.opts)) continue;
 
     // A short connector from the other speaker before each gap (except the first).
     if (items.length > 0){ say(linkPool[items.length % linkPool.length]); }
 
-    const toks = chunk.tokens.slice();
-    const blankId = items.length + 1;
-    const before = toks.slice(0, chunk.from).join(' ');
-    const after = toks.slice(chunk.to + 1).join(' ');
-    lines.push({ who: names[turn % 2], before: utContract(before), after: utContract(after), n: blankId });
+    lines.push({ who: names[turn % 2],
+      before: utContract(gap.before), after: utContract(gap.after), n: items.length + 1 });
     turn++;
     items.push(utMakeItem(rng, s));
   }
@@ -4463,6 +4463,81 @@ function utBuildDialogue(rng, ctx, want){
   say(utPickOne(rng, UT_DLG_CLOSERS));               // context line (no gap)
 
   return { items: items, lines: lines, speakers: names };
+}
+
+/* Decide whether a subject is third-person singular (needs the "-s" verb). */
+function utIsThirdSingular(subjectToks){
+  const t = subjectToks.map(function(x){ return utLc(x).replace(/[^a-z']/g, ''); }).filter(Boolean);
+  if (!t.length) return null;
+  const head = t[t.length - 1];                         // word right before the verb
+  if (head === 'i' || head === 'you' || head === 'we' || head === 'they') return false;
+  if (head === 'he' || head === 'she' || head === 'it' || head === 'one' || head === 'anyone' ||
+      head === 'someone' || head === 'somebody' || head === 'everyone' ||
+      head === 'everybody' || head === 'nobody' || head === 'something') return true;
+  // conjunction before the verb-adjacent word implies a compound/other structure
+  if (head === 'and' || head === 'or' || head === 'to' || head === 'that' || head === 'who' || head === 'which') return null;
+  if (/s$/.test(head) && !/(ss|us|is)$/.test(head)) return false;   // plain plural noun
+  if (/[a-z]$/.test(head)) return true;                 // singular noun
+  return null;                                          // unsure → don't gap
+}
+
+/* Build a guaranteed-grammatical verb gap from a sentence. Gaps the finite
+ * lexical verb; the answer agrees with the subject and every distractor is a
+ * form that does not fit. Returns null when correctness can't be guaranteed. */
+function utDialogueGap(sentence){
+  const toks = utTokens(utExpand(sentence));
+  const low = toks.map(function(t){ return utLc(t).replace(/[^a-z']/g, ''); });
+
+  for (let i = 1; i < toks.length - 1; i++){            // need something after the verb too
+    const w = low[i];
+    if (!w || UT_AUX.has(w)) continue;
+    const base = utBaseOf(w);
+    if (!utKnownVerb(base)) continue;
+
+    const is3s = utLc(utPresOf(base, true)) === w;
+    const isBase = (w === base);
+    if (!is3s && !isBase) continue;                      // only gap a present-tense finite verb
+
+    const prev = low[i - 1];
+    if (UT_AUX.has(prev) || prev === 'to' ||
+        /^(would|could|might|should|will|shall|can|may|must)$/.test(prev)) continue;
+    // A possessive/determiner before the word means it's an adjective or noun
+    // slot ("my own company", "the share price"), not a finite verb.
+    if (/^(my|your|his|her|its|our|their|a|an|the|this|that|these|those|no|any|some)$/.test(prev)) continue;
+    // The word after a finite verb shouldn't be a noun-modifying use; require the
+    // next token not to be a determiner-less noun phrase head we misread. Also
+    // ensure there IS a plausible subject (pronoun or noun) to the left.
+    const leftHead = low[i - 1];
+    const hasSubject = UT_PRON.has(leftHead) || /^[a-z]+$/.test(leftHead);
+    if (!hasSubject) continue;
+
+    const third = utIsThirdSingular(low.slice(Math.max(0, i - 3), i));
+    if (third === null) continue;
+
+    const correct = third ? utPresOf(base, true) : base;
+    const wrongAgree = third ? base : utPresOf(base, true);
+    if (utLc(correct) === utLc(wrongAgree)) continue;    // e.g. modal-like; skip
+
+    const distractors = [];
+    const pushD = function(x){ if (x && utLc(x) !== utLc(correct) && distractors.indexOf(x) < 0) distractors.push(x); };
+    pushD(wrongAgree);                                   // agreement error — the key contrast
+    pushD(utIngOf(base));                                // bare "-ing" with no auxiliary
+    pushD(utPastOf(base));                               // past tense in a present context
+    if (distractors.length < 3) pushD('to ' + base);
+    if (distractors.length < 2) continue;
+
+    return {
+      before: toks.slice(0, i).join(' '),
+      after: toks.slice(i + 1).join(' '),
+      answer: correct,
+      distractors: distractors,
+      teaches: 'subject–verb agreement',
+      explain: 'The subject takes “' + correct + '”' +
+        (third ? ' — a third-person singular subject needs the “-s” form.'
+               : ' — a plural or first/second-person subject uses the base form.')
+    };
+  }
+  return null;
 }
 
 /* =================================================================
@@ -4497,7 +4572,15 @@ const UT_PARAPHRASE = [
   [/\bimportant\b/gi, ['significant', 'crucial']],
   [/\bproblem\b/gi, ['issue', 'difficulty']],
   [/\bthink\b/gi, ['believe', 'feel']],
-  [/\bshould\b/gi, ['ought to', 'really need to']]
+  [/\bshould\b/gi, ['ought to', 'really need to']],
+  [/\bused by\b/gi, ['relied on by', 'used every day by']],
+  [/\bmillions of people\b/gi, ['millions of users', 'a huge number of people']],
+  [/\bworldwide\b/gi, ['around the world', 'across the globe']],
+  [/\bfor (two|three|four|five|several|many) years\b/gi, ['over $1 years', 'across $1 years']],
+  [/\bcutting-edge\b/gi, ['state-of-the-art', 'highly advanced']],
+  [/\bthe whole team\b/gi, ['the entire team', 'everyone on the team']],
+  [/\bvery\b/gi, ['really', 'extremely']],
+  [/\bcompany\b/gi, ['business', 'firm']]
 ];
 
 /* Reword everything EXCEPT the protected phrase (the target vocabulary),
@@ -4528,7 +4611,9 @@ function utReword(rng, sentence, protectPhrase){
     if (changes >= 4) return;                    // don't over-transform
     if (!rule[0].test(s)) { rule[0].lastIndex = 0; return; }
     const rep = utPickOne(rng, rule[1]);
-    s = s.replace(rule[0], function(){ return rep; });
+    // Use string replacement so $1, $2 … backreferences in `rep` expand
+    // (e.g. "for two years" -> "over $1 years" -> "over two years").
+    s = s.replace(rule[0], rep);
     rule[0].lastIndex = 0;
     changes++;
   });
@@ -4552,10 +4637,30 @@ function utLooksGrammatical(sentence){
     // a/an disagreement that survived (shouldn't, after utFixArticles, but guard anyway)
     if (a === 'a'  && /^[aeiou]/.test(b) && !/^(uni|use|user|euro|one|once)/.test(b)) return false;
     if (a === 'an' && !/^[aeiou]/.test(b)) return false;
+    // "to" + finite (3rd-sing / past / -ing) instead of the bare infinitive:
+    // "to develops", "to developed", "to developing" are all wrong.
+    if (a === 'to' && utKnownVerb(utBaseOf(b)) && b !== utBaseOf(b) &&
+        !UT_DET.has(b) && !UT_PRON.has(b)) return false;
     // two consecutive lexical verbs with no linker (bully harass, make create)
     const av = utKnownVerb(utBaseOf(a)), bv = utKnownVerb(utBaseOf(b));
     const linker = /^(to|and|or|then|please|help|let|make|go|come|will|would|can|could|should|must|might|may)$/;
     if (av && bv && !linker.test(a) && !linker.test(b)) return false;
+    // plural/first-person subject immediately followed by a 3rd-sing verb, or a
+    // 3rd-sing subject followed by a bare-form lexical verb ("company develop").
+    if (/^(i|we|they|you)$/.test(a) && bv && utLc(utPresOf(utBaseOf(b), true)) === b && utBaseOf(b) !== b) return false;
+  }
+  // "<singular-noun> <bare lexical verb>" agreement (e.g. "company develop") —
+  // only flag when the noun is clearly singular and the verb is clearly a bare
+  // present lexical verb, to avoid false positives.
+  for (let i = 1; i < toks.length; i++){
+    const subj = toks[i - 1], v = toks[i];
+    if (!subj || !v) continue;
+    if (/^(the|a|an|this|that)$/.test(toks[i - 2] || '') &&
+        /[^s]$/.test(subj) && utKnownVerb(v) && v === utBaseOf(v) &&
+        utLc(utPresOf(v, true)) !== v && !UT_AUX.has(v)) {
+      // "The company develop ..." -> wrong
+      return false;
+    }
   }
   return true;
 }
@@ -4614,37 +4719,49 @@ function utBuildTransform(rng, ctx, want){
     if (!syn) continue;
 
     // Build the correct option: reword the whole sentence, then put the
-    // synonym in place of the target word so the meaning is preserved.
+    // synonym in place of the target word so the meaning is preserved but the
+    // wording clearly differs from the situation.
     const reworded = utReword(rng, ex, word);
     const rwHit = utFindWord(reworded.text, word);
     if (!rwHit) continue;                                   // target survived the reword?
+    // Need the correct option to be a REAL paraphrase (several words changed),
+    // otherwise it differs from the situation by a single synonym and the item
+    // becomes a weak "spot the synonym" with an ambiguous key.
+    if (reworded.changed < 1) continue;
     const correct = utFixArticles(utTidy(reworded.text.slice(0, rwHit.index) + syn + reworded.text.slice(rwHit.index + rwHit.text.length)));
-    // Grammaticality guard — this is what stops "bully harass people".
-    if (!utLooksGrammatical(correct)) continue;
+    if (!utLooksGrammatical(correct)) continue;             // e.g. blocks "bully harass people"
     if (utLc(correct) === utLc(ex)) continue;               // must differ from the situation
 
-    // Distractor word pool — all SAME part of speech as the target so the
-    // substitution stays grammatical in the slot (no noun dropped into a verb
-    // slot). Near-miss first (close but wrong here), then clearly-wrong words.
+    // Distractor words: SAME part of speech, plausible in the slot, and CLOSE
+    // in meaning to the answer but still wrong — not obvious opposites and not
+    // true synonyms of the target (which would be a second correct answer).
     const myPos = utPos(v);
-    const samePosV = ctx.vocab.filter(function(o){ return o !== v && utVocabWord(o) && (!myPos || utPos(o) === myPos); });
+    const cleanWord = function(w){ return /^[a-z][a-z' -]*$/i.test(utClean(w || '')); };  // drop junk tokens
+    const synSet = {}; utVocabList(v, 'synonyms').forEach(function(x){ synSet[utLc(x)] = 1; });
+    synSet[utLc(word)] = 1; synSet[utLc(syn)] = 1;
+
+    const samePosV = ctx.vocab.filter(function(o){
+      return o !== v && utVocabWord(o) && cleanWord(utVocabWord(o)) && (!myPos || utPos(o) === myPos);
+    });
     const wrongWords = [];
     const pushWrong = function(w){
-      if (!w) return;
+      if (!cleanWord(w)) return;
       const k = utLc(w);
-      if (k === utLc(word) || k === utLc(syn)) return;
+      if (synSet[k]) return;                                   // never a synonym of the answer
+      if (k.split(/\s+/).length > 2) return;
       if (wrongWords.indexOf(w) >= 0) return;
-      if (k.split(/\s+/).length > 2) return;                  // keep single-slot fills
       wrongWords.push(w);
     };
-    // near-miss: a same-POS other target word (plausible, but wrong here)
-    if (samePosV.length){ pushWrong(utVocabWord(utShuffle(rng, samePosV)[0])); }
-    // then antonyms of the target (same POS, clearly opposite meaning)
-    utShuffle(rng, ants).forEach(pushWrong);
-    // then more same-POS target words
+    // Prefer other target words of the same part of speech (near-misses in the
+    // same register/topic). These read as plausible but change the meaning.
     utShuffle(rng, samePosV).forEach(function(o){ pushWrong(utVocabWord(o)); });
+    // Only if we still need more, fall back to a couple of antonyms — placed
+    // last so easy opposites are the least likely fillers, not the default.
+    if (wrongWords.length < spec.opts - 1){
+      utShuffle(rng, ants).forEach(function(a){ if (cleanWord(a)) pushWrong(a); });
+    }
 
-    const seen = {}; seen[utLc(correct)] = 1; seen[utLc(syn)] = 1;
+    const seen = {}; seen[utLc(correct)] = 1; seen[utLc(syn)] = 1; seen[utLc(ex)] = 1;
     const dis = [];
     for (let k = 0; k < wrongWords.length && dis.length < spec.opts - 1; k++){
       const wrw = wrongWords[k];
@@ -4655,6 +4772,7 @@ function utBuildTransform(rng, ctx, want){
       seen[utLc(opt)] = 1;
       dis.push(opt);
     }
+    if (dis.length < spec.opts - 1) continue;                  // don't ship a thin/again-easy item
 
     const s = {
       type: 'transform', part: 3,
@@ -4781,6 +4899,22 @@ function utBuildErrorId(rng, ctx, want){
  * The passage is the student's own upgraded essay. Distractors are
  * built by antonym substitution, so they are contradicted by the text.
  * ================================================================= */
+/* Turn a definition that names its own word ("'Demanding' means requiring a lot
+ * of effort; 'extremely' is a stronger intensifier than 'very'.") into a bare
+ * meaning ("Requiring a lot of effort.") so it reads as a plausible meaning for
+ * ANY target word — the reading options must not give the answer away by naming
+ * the word each one defines. */
+function utBareDef(def){
+  let d = utClean(def || '');
+  if (!d) return '';
+  d = d.split(/\s*;\s*/)[0];                                            // first clause only
+  d = d.replace(/^[\u2018\u2019'"“”]?[A-Za-z][\w'-]*[\u2018\u2019'"“”]?\s+(means|is|refers to|describes|indicates)\s+/i, '');
+  d = d.replace(/\s*[\u2014-]+\s*it (sounds|feels|is|means|has|gives).*$/i, '');   // trailing "— it sounds affectionate…"
+  d = utClean(d);
+  if (!d) return utClean(def);
+  return utCap(d.replace(/\.+$/, '')) + '.';
+}
+
 function utBuildReading(rng, ctx, want){
   const spec = utLevelSpec(ctx.level);
   const items = [];
@@ -4803,14 +4937,29 @@ function utBuildReading(rng, ctx, want){
   }));
   for (let i = 0; i < inText.length && items.length < 2; i++){
     const v = inText[i];
-    const defs = utShuffle(rng, ctx.vocab.filter(function(o){
-      return o !== v && o.definition && utLc(o.definition) !== utLc(v.definition);
-    })).slice(0, spec.opts - 1).map(function(o){ return utClean(o.definition); });
+    const myPos = utPos(v);
+    const ansDef = utBareDef(v.definition);
+    // Prefer distractor meanings of the SAME part of speech (so all four options
+    // are plausible meanings for the same word), then fall back to any others.
+    const samePos = ctx.vocab.filter(function(o){
+      return o !== v && o.definition && utPos(o) === myPos && utLc(utBareDef(o.definition)) !== utLc(ansDef);
+    });
+    const otherPos = ctx.vocab.filter(function(o){
+      return o !== v && o.definition && utPos(o) !== myPos && utLc(utBareDef(o.definition)) !== utLc(ansDef);
+    });
+    const seen = {}; seen[utLc(ansDef)] = 1;
+    const defs = [];
+    utShuffle(rng, samePos).concat(utShuffle(rng, otherPos)).forEach(function(o){
+      if (defs.length >= spec.opts - 1) return;
+      const d = utBareDef(o.definition);
+      if (!d || seen[utLc(d)]) return;
+      seen[utLc(d)] = 1; defs.push(d);
+    });
     const s = {
       type: 'reading', part: 5,
       stem: 'What does “' + utVocabWord(v) + '” mean in the passage?',
-      answer: utClean(v.definition), distractors: defs,
-      explain: 'In this passage “' + utVocabWord(v) + '” means ' + utClean(v.definition) + '.',
+      answer: ansDef, distractors: defs,
+      explain: 'In this passage “' + utVocabWord(v) + '” means ' + ansDef.replace(/\.$/, '') + '.',
       teaches: utVocabWord(v), refWord: utVocabWord(v), ref: v.id || ''
     };
     if (!utEnoughOptions(s, spec.opts)) continue;
@@ -5241,8 +5390,8 @@ function utBuildPaper(seed){
   });
 }
 
-/* A signature of a paper's actual content, so a "new test" can be checked
- * for being genuinely different from the previous one. */
+/* A signature of a paper's actual content, so a new test can be checked
+ * for being genuinely different from ones already seen. */
 function utPaperSignature(t){
   if (!t || !t.items) return '';
   return t.items.map(function(it){
@@ -5250,8 +5399,10 @@ function utPaperSignature(t){
   }).sort().join('|');
 }
 
-/* How many tests the learner has generated at each level (drives the
- * "first test uses the fullest upgrade material" rule). */
+/* Per-level record of how many papers have been built and the SET of paper
+ * signatures already shown to this learner (in either mode). A new paper must
+ * not match any signature already seen, so an Exam-mode paper is always a
+ * fresh test the student has not already done in Practice, and vice versa. */
 function utCountKey(){ return 'lue_utcount_' + (AUTH.name || 'anon'); }
 function utCounts(){ try { return JSON.parse(localStorage.getItem(utCountKey()) || '{}'); } catch(e){ return {}; } }
 function utBumpCount(level){
@@ -5259,40 +5410,68 @@ function utBumpCount(level){
   try { localStorage.setItem(utCountKey(), JSON.stringify(c)); } catch(e){}
   return c[level];
 }
+function utSeenKey(){ return 'lue_utseen_' + (AUTH.name || 'anon'); }
+function utSeenAll(){ try { return JSON.parse(localStorage.getItem(utSeenKey()) || '{}'); } catch(e){ return {}; } }
+function utSeenList(level){ const a = utSeenAll(); return a[level] || []; }
+function utMarkSeen(level, sig){
+  if (!sig) return;
+  const a = utSeenAll();
+  const list = a[level] || [];
+  if (list.indexOf(sig) < 0){ list.push(sig); a[level] = list.slice(-40); }  // keep last 40 per level
+  try { localStorage.setItem(utSeenKey(), JSON.stringify(a)); } catch(e){}
+}
 
 function utStart(seed){
   const counts = utCounts();
   const firstAtLevel = !counts[activeLevel];
+  const seen = utSeenList(activeLevel);
+  const seenSet = {}; seen.forEach(function(s){ seenSet[s] = 1; });
 
-  let t;
+  let t = null;
+
   if (seed){
     t = utBuildPaper(seed);
   } else if (firstAtLevel){
-    // FIRST test at this level: a deterministic build seeded from the prompt +
-    // level, so it draws on as much of the recommended upgrade material for
-    // this level as possible and is the same "cornerstone" paper every time
-    // until the learner asks for a new one.
+    // FIRST ever test at this level: a full-coverage build seeded from the
+    // prompt + level so it uses as much of the recommended upgrade material
+    // as possible.
     t = utBuildPaper(utSeedFromString('first::' + activeLevel + '::' + ((current.meta && current.meta.prompt) || '')));
-  } else {
-    // SUBSEQUENT tests: genuinely new content. Re-roll until the paper differs
-    // from the previous one (same vocab/grammar targets, new passages/items).
-    const prevSig = utPaperSignature(UT.test) || (UT.lastSig || '');
-    t = utBuildPaper((Math.random() * 0xffffffff) >>> 0);
-    let tries = 0;
-    while (tries < 6 && t.total && utPaperSignature(t) === prevSig){
-      t = utBuildPaper((Math.random() * 0xffffffff) >>> 0);
+  }
+
+  // Whether it's a "new test", an Exam after Practice, or the first build
+  // collided with something already seen, roll fresh papers until we get one
+  // whose content the student has NOT already been shown.
+  if (!t || (!seed && seenSet[utPaperSignature(t)])){
+    let best = t, bestNew = false, tries = 0;
+    while (tries < 24){
+      const cand = utBuildPaper((Math.random() * 0xffffffff) >>> 0);
+      if (!cand.total){ tries++; continue; }
+      const sig = utPaperSignature(cand);
+      if (!seenSet[sig]){ best = cand; bestNew = true; break; }
+      if (!best) best = cand;                      // fallback if everything collides
       tries++;
+    }
+    t = best;
+    if (!bestNew && Object.keys(seenSet).length){
+      // Material is too limited to make a distinct paper — tell the student.
+      const n = $('ut-note');
+      if (n){ n.className = 'tool-note';
+        n.textContent = 'There is limited upgrade material at ' + activeLevel +
+          ', so this test reuses some questions you have seen. Add more upgrades or try another level for fresh content.'; }
     }
   }
 
-  if (!t.total){
+  if (!t || !t.total){
     const n = $('ut-note');
     if (n){ n.className = 'tool-note err';
       n.textContent = 'There is not enough upgrade material at ' + activeLevel + ' to build a test yet. Try another level.'; }
     return;
   }
+
+  const sig = utPaperSignature(t);
   utBumpCount(activeLevel);
-  UT.lastSig = utPaperSignature(t);
+  utMarkSeen(activeLevel, sig);
+  UT.lastSig = sig;
   UT.test = t; UT.answers = new Array(t.total).fill(-1); UT.flags = {};
   UT.idx = 0; UT.mode = 'running'; UT.reviewing = false; UT.retryOf = null;
   UT.startedAt = Date.now();
