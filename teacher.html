@@ -649,7 +649,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
     <button class="tab" data-screen="vocab" id="tab-vocab" disabled>4 &middot; Vocabulary<span class="tcount" id="vcount" style="display:none"></span></button>
     <button class="tab" data-screen="grammar" id="tab-grammar" disabled>5 &middot; Grammar<span class="tcount" id="gcount" style="display:none"></span></button>
     <button class="tab" data-screen="practice" id="tab-practice" disabled style="display:none">Practice</button>
-    <button class="tab" data-screen="unittest" id="tab-unittest" disabled>Unit Test</button>
+    <button class="tab" data-screen="unittest" id="tab-unittest" disabled>CEFR LevelUp Test</button>
     <button class="tab" data-screen="studio" id="tab-studio" disabled>6 &middot; Lesson Studio</button>
     <button class="tab" data-screen="class" id="tab-class" disabled style="display:none">7 &middot; Class</button>
   </nav>
@@ -834,7 +834,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 
     <!-- ============ UNIT TEST ============ -->
     <section class="screen" id="screen-unittest">
-      <h2>Unit Test</h2>
+      <h2>CEFR LevelUp Test</h2>
       <p class="lede" style="margin-bottom:14px">A 20-question paper in the school exam format, built entirely from your own essay: the vocabulary and grammar you were told to upgrade, at the level you choose. Every paper is different.</p>
       <div class="cefr-bar"><span class="cefr-label">Test level:</span><div class="cefr-row" id="ut-cefr-row"></div></div>
       <div id="ut-body-wrap"></div>
@@ -868,7 +868,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
             <div class="tool-note" id="mat-podcast-note"></div>
           </div>
           <div class="mat-card">
-            <div class="mat-ico">📝</div><h3>Unit Test Generator</h3>
+            <div class="mat-ico">📝</div><h3>CEFR LevelUp Test Generator</h3>
             <p>A 20-item paper in the school format — cloze, dialogue, sentence transformation, error identification and reading — targeting the upgraded language and the prompt theme, with an answer key.</p>
             <button class="ghost" type="button" id="mat-unittest-btn">Open the generator</button>
             <div class="tool-note" id="mat-unittest-note"></div>
@@ -948,8 +948,8 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
       </div>
 
       <div class="pane">
-        <div class="pane-title">Unit test results <button class="ghost" type="button" id="ut-scores-refresh">↻ Refresh</button></div>
-        <p class="up-hint" style="margin:0 0 10px">The highest unit test score each student has reached at every CEFR level.</p>
+        <div class="pane-title">CEFR LevelUp Test results <button class="ghost" type="button" id="ut-scores-refresh">↻ Refresh</button></div>
+        <p class="up-hint" style="margin:0 0 10px">The highest CEFR LevelUp Test score each student has reached at every CEFR level.</p>
         <div id="ut-scores-body"><p class="up-hint" style="margin:0">Open this tab or press Refresh to load results.</p></div>
       </div>
 
@@ -1165,7 +1165,7 @@ function configureRole(){
     $('login-btn').textContent = 'Unlock console';
     $('login-hint').textContent = 'The key is the TEACHER_KEY script property you set in Apps Script. Sessions last 12 hours.';
     $('tab-class').style.display = '';
-    $('tab-unittest').innerHTML = '📝 Unit Test';
+    $('tab-unittest').innerHTML = '📝 CEFR LevelUp Test';
     return;
   }
   // Student console
@@ -1177,7 +1177,7 @@ function configureRole(){
   $('tab-vocab').innerHTML = '3 &middot; Vocabulary<span class="tcount" id="vcount" style="display:none"></span>';
   $('tab-grammar').innerHTML = '4 &middot; Grammar<span class="tcount" id="gcount" style="display:none"></span>';
   $('tab-practice').innerHTML = '5 &middot; Practice Gym';
-  $('tab-unittest').innerHTML = '6 &middot; Unit Test';
+  $('tab-unittest').innerHTML = '6 &middot; CEFR LevelUp Test';
   $('tab-studio').innerHTML = '7 &middot; Role-play';
   ['vocab','grammar'].forEach(k => {
     const b = $(k+'-blooket-btn'); if (b) b.style.display = 'none';
@@ -4458,6 +4458,93 @@ function utBuildDialogue(rng, ctx, want){
   return { items: items, lines: lines, speakers: names };
 }
 
+/* =================================================================
+ * Synonym MCQs — a reliable, always-correct question type used to fill
+ * the grammar section when the essay does not yield enough clean
+ * subject-verb items. "Which word is closest in meaning to X?" The
+ * correct answer is a real synonym of X; the distractors are similar
+ * words drawn from OTHER vocabulary at the SAME CEFR level (and same
+ * part of speech), so they are plausible but not synonyms of X.
+ * ================================================================= */
+
+/* Read a vocabulary word's synonyms WITH their CEFR level tags intact. */
+function utSynEntries(v){
+  return ((v && v.synonyms) || []).map(function(s){
+    const raw = utClean(s);
+    return { word: utStripLvl(raw), level: lvlOf(raw) };
+  }).filter(function(x){ return x.word && x.word.length > 1 && x.word.indexOf(' ') < 0; });
+}
+
+function utBuildSynonym(rng, ctx, want){
+  const items = [];
+  const optN = utLevelSpec(ctx.level).opts;
+
+  // Every candidate synonym across the vocabulary, indexed by CEFR level and
+  // part of speech, so distractors can be matched to the correct answer.
+  const all = [];
+  (ctx.vocab || []).forEach(function(v){
+    const pos = utPos(v);
+    utSynEntries(v).forEach(function(e){ all.push({ word: e.word, level: e.level, pos: pos, owner: v }); });
+  });
+  if (all.length < optN) return { items: items };
+
+  const usedTarget = {}, usedAnswer = {};
+  const targets = utShuffle(rng, (ctx.vocab || []).filter(function(v){
+    return utVocabWord(v) && utSynEntries(v).length;
+  }));
+
+  for (let i = 0; i < targets.length && items.length < want; i++){
+    const v = targets[i];
+    const word = utVocabWord(v);
+    if (usedTarget[utLc(word)]) continue;
+    const pos = utPos(v);
+
+    // Correct answer: a genuine synonym of the target (prefer one tagged at the
+    // test level, else any). Its own synonyms are the "forbidden" set so a
+    // distractor can never accidentally also be correct.
+    const syns = utSynEntries(v);
+    const answerEntry = syns.filter(function(e){ return e.level === ctx.level; })[0] || syns[0];
+    const answer = answerEntry.word;
+    if (usedAnswer[utLc(answer)]) continue;
+
+    const forbidden = {};
+    forbidden[utLc(word)] = 1;
+    forbidden[utLc(answer)] = 1;
+    syns.forEach(function(e){ forbidden[utLc(e.word)] = 1; });
+
+    // Distractor pool: same CEFR level as the answer AND same part of speech,
+    // from OTHER vocabulary. Fall back to same-level (any POS), then same POS.
+    const answerLv = answerEntry.level;
+    const sameLvPos = all.filter(function(c){ return c.owner !== v && c.level === answerLv && c.pos === pos && !forbidden[utLc(c.word)]; });
+    const sameLv    = all.filter(function(c){ return c.owner !== v && c.level === answerLv && !forbidden[utLc(c.word)]; });
+    const samePos   = all.filter(function(c){ return c.owner !== v && c.pos === pos && !forbidden[utLc(c.word)]; });
+
+    const pickPool = utShuffle(rng, sameLvPos).concat(utShuffle(rng, sameLv), utShuffle(rng, samePos));
+    const distractors = [];
+    const seen = {}; seen[utLc(answer)] = 1;
+    for (let k = 0; k < pickPool.length && distractors.length < optN - 1; k++){
+      const cw = pickPool[k].word;
+      if (seen[utLc(cw)] || forbidden[utLc(cw)]) continue;
+      seen[utLc(cw)] = 1;
+      distractors.push(cw);
+    }
+    if (distractors.length < optN - 1) continue;
+
+    usedTarget[utLc(word)] = 1;
+    usedAnswer[utLc(answer)] = 1;
+
+    const lvNote = answerLv ? ' (' + answerLv + ')' : '';
+    items.push(utMakeItem(rng, {
+      type: 'synonym', part: 5,
+      stem: 'Which word is closest in meaning to “' + word + '”?',
+      answer: answer, distractors: distractors,
+      explain: '“' + answer + '”' + lvNote + ' is a synonym of “' + word + '” (' + utClean(v.definition || '') + ').',
+      teaches: 'synonyms', ref: v.id || ''
+    }));
+  }
+  return { items: items };
+}
+
 /* Decide whether a subject is third-person singular (needs the "-s" verb). */
 function utIsThirdSingular(subjectToks){
   const t = subjectToks.map(function(x){ return utLc(x).replace(/[^a-z']/g, ''); }).filter(Boolean);
@@ -4474,14 +4561,21 @@ function utIsThirdSingular(subjectToks){
   return null;                                          // unsure → don't gap
 }
 
-/* Build a guaranteed-grammatical verb gap from a sentence. Gaps the finite
- * lexical verb; the answer agrees with the subject and every distractor is a
- * form that does not fit. Returns null when correctness can't be guaranteed. */
+/* Build a guaranteed-grammatical verb gap from a sentence. To avoid the
+ * agreement mistakes that arise from compound subjects ("my husband and I"),
+ * fronted adverbials ("At weekends, ... I ...") and relative clauses, this is
+ * deliberately CONSERVATIVE: it only gaps a present-tense lexical verb whose
+ * subject is a single, unambiguous personal pronoun sitting immediately before
+ * it. Anything less certain returns null (the paper then uses another item). */
 function utDialogueGap(sentence){
   const toks = utTokens(utExpand(sentence));
   const low = toks.map(function(t){ return utLc(t).replace(/[^a-z']/g, ''); });
 
-  for (let i = 1; i < toks.length - 1; i++){            // need something after the verb too
+  // Subject pronoun -> does it take the third-person "-s" form?
+  const THIRD = { he:true, she:true, it:true };
+  const NON3  = { i:true, we:true, you:true, they:true };
+
+  for (let i = 1; i < toks.length - 1; i++){            // need a subject before and content after
     const w = low[i];
     if (!w || UT_AUX.has(w)) continue;
     const base = utBaseOf(w);
@@ -4489,34 +4583,34 @@ function utDialogueGap(sentence){
 
     const is3s = utLc(utPresOf(base, true)) === w;
     const isBase = (w === base);
-    if (!is3s && !isBase) continue;                      // only gap a present-tense finite verb
+    if (!is3s && !isBase) continue;                      // only a present-tense finite verb
 
-    const prev = low[i - 1];
-    if (UT_AUX.has(prev) || prev === 'to' ||
-        /^(would|could|might|should|will|shall|can|may|must)$/.test(prev)) continue;
-    // A possessive/determiner before the word means it's an adjective or noun
-    // slot ("my own company", "the share price"), not a finite verb.
-    if (/^(my|your|his|her|its|our|their|a|an|the|this|that|these|those|no|any|some)$/.test(prev)) continue;
-    // The word after a finite verb shouldn't be a noun-modifying use; require the
-    // next token not to be a determiner-less noun phrase head we misread. Also
-    // ensure there IS a plausible subject (pronoun or noun) to the left.
-    const leftHead = low[i - 1];
-    const hasSubject = UT_PRON.has(leftHead) || /^[a-z]+$/.test(leftHead);
-    if (!hasSubject) continue;
-
-    const third = utIsThirdSingular(low.slice(Math.max(0, i - 3), i));
+    // The token immediately before MUST be a lone subject pronoun.
+    const subj = low[i - 1];
+    const third = THIRD[subj] ? true : (NON3[subj] ? false : null);
     if (third === null) continue;
+
+    // Reject a compound subject: "... and I <verb>", "... or he <verb>".
+    const before2 = low[i - 2] || '';
+    if (before2 === 'and' || before2 === 'or') continue;
+
+    // Reject when a preceding auxiliary/modal/"to"/participle marker makes this
+    // not the finite main verb of a simple present clause.
+    // (Pronoun directly before the verb already rules most of these out.)
 
     const correct = third ? utPresOf(base, true) : base;
     const wrongAgree = third ? base : utPresOf(base, true);
-    if (utLc(correct) === utLc(wrongAgree)) continue;    // e.g. modal-like; skip
+    if (utLc(correct) === utLc(wrongAgree)) continue;    // irregular that doesn't inflect → skip
+
+    // Sanity: the correct answer must reproduce the ORIGINAL word, so we know
+    // the sentence really was grammatical to begin with (guards odd data).
+    if (utLc(correct) !== w) continue;
 
     const distractors = [];
     const pushD = function(x){ if (x && utLc(x) !== utLc(correct) && distractors.indexOf(x) < 0) distractors.push(x); };
-    pushD(wrongAgree);                                   // agreement error — the key contrast
+    pushD(wrongAgree);                                   // agreement contrast — the teaching point
     pushD(utIngOf(base));                                // bare "-ing" with no auxiliary
     pushD(utPastOf(base));                               // past tense in a present context
-    if (distractors.length < 3) pushD('to ' + base);
     if (distractors.length < 2) continue;
 
     return {
@@ -4525,9 +4619,9 @@ function utDialogueGap(sentence){
       answer: correct,
       distractors: distractors,
       teaches: 'subject–verb agreement',
-      explain: 'The subject takes “' + correct + '”' +
+      explain: '“' + (third ? subj.charAt(0).toUpperCase() + subj.slice(1) : subj) + '” takes “' + correct + '”' +
         (third ? ' — a third-person singular subject needs the “-s” form.'
-               : ' — a plural or first/second-person subject uses the base form.')
+               : ' — this subject uses the base form (no “-s”).')
     };
   }
   return null;
@@ -5034,7 +5128,8 @@ const UT_PART_META = [
   { n:1, title:'Vocabulary in context', instr:'Choose the best answer to fill in each blank.' },
   { n:2, title:'Grammar in context', instr:'Two classmates are talking about the topic. Choose the best option to complete each line.' },
   { n:3, title:'Error identification', instr:'One underlined part of each sentence is wrong. Choose the number of the mistake.' },
-  { n:4, title:'Reading comprehension', instr:'Read the passage, then choose the best answer for each question.' }
+  { n:4, title:'Reading comprehension', instr:'Read the passage, then choose the best answer for each question.' },
+  { n:5, title:'Synonyms', instr:'Choose the word that is closest in meaning to the word in bold.' }
 ];
 
 function utGenerateTest(opts){
@@ -5057,20 +5152,21 @@ function utGenerateTest(opts){
   };
   if (!ctx.readSents.length) ctx.readSents = allSents;
 
-  // Four parts: vocabulary cloze, grammar dialogue, error identification,
-  // reading. (The old sentence-transformation part has been replaced by more
-  // error-identification questions.)
-  const target = { 1:5, 2:4, 3:7, 4:4 };
+  // Four core parts plus up to 3 synonym MCQs (a reliable, always-correct
+  // vocabulary type that also fills the paper when the essay yields few clean
+  // grammar-dialogue items).
+  const target = { 1:5, 2:4, 3:7, 4:4, 5:3 };
   const p1 = utBuildCloze(rng, ctx, target[1]);
   const p2 = utBuildDialogue(rng, ctx, target[2]);
   const p3 = utBuildErrorId(rng, ctx, target[3]);     // error identification
   const p4 = utBuildReading(rng, ctx, target[4]);     // reading comprehension
+  const p5 = utBuildSynonym(rng, ctx, target[5]);     // synonym MCQs (max 3)
 
   // Top up toward 20 while keeping the paper balanced. No single part may
   // exceed a cap, so the exam never becomes half one question type — a
   // balanced 14-question paper beats a lopsided 20-question one.
-  const CAP = { 1:6, 2:5, 3:9, 4:6 };
-  let total = p1.items.length + p2.items.length + p3.items.length + p4.items.length;
+  const CAP = { 1:6, 2:5, 3:9, 4:6, 5:3 };
+  let total = p1.items.length + p2.items.length + p3.items.length + p4.items.length + p5.items.length;
 
   const growCloze = function(){
     if (total >= 20 || p1.items.length >= CAP[1]) return false;
@@ -5109,8 +5205,22 @@ function utGenerateTest(opts){
     }
     return false;
   };
-  // Error identification leads the top-up (it replaced the transform part).
-  const growers = [growErrorId, growCloze, growReading];
+  const growSynonym = function(){
+    if (total >= 20 || p5.items.length >= CAP[5]) return false;
+    const have = {}; p5.items.forEach(function(it){ have[utLc(it.stem)] = 1; });
+    const extra = utBuildSynonym(rng, ctx, p5.items.length + 2);
+    for (let i = 0; i < extra.items.length; i++){
+      if (total >= 20 || p5.items.length >= CAP[5]) break;
+      const it = extra.items[i];
+      if (have[utLc(it.stem)]) continue;
+      have[utLc(it.stem)] = 1;
+      p5.items.push(it); total++; return true;
+    }
+    return false;
+  };
+  // Error identification leads the top-up (it replaced the transform part),
+  // then synonyms, cloze and reading round the paper out.
+  const growers = [growErrorId, growSynonym, growCloze, growReading];
   let gi = 0, stagnant = 0;
   while (total < 20 && stagnant < growers.length){
     const grew = growers[gi % growers.length]();
@@ -5126,6 +5236,7 @@ function utGenerateTest(opts){
   };
   pushPart(1, p1, { passage: p1.passage });
   pushPart(2, p2, { lines: p2.lines, speakers: p2.speakers });
+  pushPart(5, p5, {});                                  // Synonyms
   pushPart(3, p3, {});
   pushPart(4, p4, { passage: p4.passage });
 
@@ -5300,7 +5411,7 @@ function applyRoleplayAccess(allowed){
     lock.style.display = 'block';
     lock.innerHTML = '🔒 <b>Role-play is paused.</b> Your teacher has temporarily turned off the ' +
       'Role-play arcade for your account. Everything else — your report, study cards, games, the ' +
-      'Practice Gym and the Unit Test — is still open.';
+      'Practice Gym and the CEFR LevelUp Test — is still open.';
   }
 }
 
@@ -5328,7 +5439,7 @@ function utBand(p){ return p >= 80 ? 3 : p >= 60 ? 2 : p > 0 ? 1 : 0; }
 function renderUnitTest(){
   if (!current){
     $('ut-body-wrap').innerHTML = '<div class="pane"><p class="up-hint" style="margin:0">' +
-      'A unit test is built from an assessed essay. Once there is an assessment on file, this tab fills up.</p></div>';
+      'A CEFR LevelUp Test is built from an assessed essay. Once there is an assessment on file, this tab fills up.</p></div>';
     return;
   }
   if (UT.mode === 'running' || UT.mode === 'review'){ utRenderRunner(); return; }
@@ -5349,7 +5460,7 @@ function renderUnitTest(){
 
   $('ut-body-wrap').innerHTML =
     '<div class="ut-hero"><div>' +
-      '<h3>' + esc(activeLevel) + ' Unit Test · ' + esc(spec.label) + '</h3>' +
+      '<h3>' + esc(activeLevel) + ' CEFR LevelUp Test · ' + esc(spec.label) + '</h3>' +
       '<p>One timed exam at each CEFR level, built from your own essay: the words and structures you were told to upgrade. ' +
       'Vocabulary, grammar in context, sentence transformation, error spotting and reading.</p>' +
       '<p style="margin-top:6px;color:var(--ink-faint);font-size:.84rem">⏱ ' + spec.minutes +
@@ -5735,7 +5846,7 @@ function utRenderResults(){
       '<button class="main" type="button" id="ut-again" style="width:auto;margin-top:0;min-width:150px">↻ Retake exam</button>' +
     '</div></div>' +
     '<div class="file-row" style="margin-top:14px">' +
-      '<button class="ghost" type="button" id="ut-done">← Back to Unit Test home</button>' +
+      '<button class="ghost" type="button" id="ut-done">← Back to CEFR LevelUp Test home</button>' +
       (IS_STUDENT ? '' : '<button class="ghost" type="button" id="ut-print2">🖨 Printable paper + key</button>') +
     '</div>';
 
@@ -5784,7 +5895,7 @@ function utPrintPaper(){
   const E = esc;
   let h = '<!doctype html><html><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>Unit Test · ' + E(name) + ' · ' + E(t.level) + '</title><style>' +
+    '<title>CEFR LevelUp Test · ' + E(name) + ' · ' + E(t.level) + '</title><style>' +
     'body{font-family:Georgia,serif;max-width:760px;margin:0 auto;padding:34px 26px;color:#111;line-height:1.6}' +
     'h1{font-size:1.35rem;margin:0 0 3px}h2{font-size:1.02rem;margin:26px 0 6px;border-bottom:1.5px solid #333;padding-bottom:4px}' +
     '.meta{font-size:.82rem;color:#555;margin-bottom:16px}.instr{font-style:italic;font-size:.9rem;margin:0 0 10px}' +
@@ -5797,7 +5908,7 @@ function utPrintPaper(){
     '.key td,.key th{border:1px solid #ccc;padding:5px 8px;text-align:left}.key th{background:#eee}' +
     '.sit{display:block;background:#f6f4ee;border-left:3px solid #999;padding:7px 11px;margin:5px 0;font-size:.94rem}' +
     '@media print{body{padding:0}}</style></head><body>' +
-    '<h1>Unit Test — ' + E(t.level) + ' (' + E(t.levelLabel) + ')</h1>' +
+    '<h1>CEFR LevelUp Test — ' + E(t.level) + ' (' + E(t.levelLabel) + ')</h1>' +
     '<div class="meta">' + E(name) + ' &middot; paper <b>' + E(t.paperCode) + '</b> &middot; ' +
     t.total + ' items &middot; time allowed ' + t.minutes + ' minutes<br>' +
     'Built from the essay prompt: ' + E((t.prompt || '').slice(0, 180)) + (t.prompt.length > 180 ? '…' : '') + '</div>' +
@@ -5848,7 +5959,7 @@ function utPrintPaper(){
       return '<tr><td>' + it.n + '</td><td><b>' + utLetter(it.answer) + '</b></td><td>' +
         E(it.teaches || '') + '</td><td>' + E(it.explain || '') + '</td></tr>'; }).join('') +
     '</table><p style="font-size:.8rem;color:#666;margin-top:12px">Regenerate a fresh paper (different items, same targets) ' +
-    'from the Unit Test tab. Paper code ' + E(t.paperCode) + ' reproduces this exact version.</p></div></body></html>';
+    'from the CEFR LevelUp Test tab. Paper code ' + E(t.paperCode) + ' reproduces this exact version.</p></div></body></html>';
 
   const w = window.open('', '_blank');
   if (!w){ const n = $('ut-note'); if (n){ n.className = 'tool-note err'; n.textContent = 'Pop-up blocked — allow pop-ups to open the printable paper.'; } return; }
@@ -5859,20 +5970,20 @@ function utPrintPaper(){
 async function refreshUnitScores(){
   const box = $('ut-scores-body');
   if (!box) return;
-  box.innerHTML = '<p class="up-hint" style="margin:0">Loading unit test results…</p>';
+  box.innerHTML = '<p class="up-hint" style="margin:0">Loading CEFR LevelUp Test results…</p>';
   let rows = null;
   try {
     const out = await api({ action:'unittest_scores' });
     rows = out.students || [];
   } catch(err){
-    box.innerHTML = '<div class="tool-note err" style="display:block">Could not load unit test results from the server just now. ' +
+    box.innerHTML = '<div class="tool-note err" style="display:block">Could not load CEFR LevelUp Test results from the server just now. ' +
       'If this persists, check that the Apps Script backend is the current version (it must handle the ' +
       '<b>unittest_result</b> and <b>unittest_scores</b> actions). Until it loads, each student\u2019s best scores ' +
-      'are kept on their own device and shown on their Unit Test tab.</div>';
+      'are kept on their own device and shown on their CEFR LevelUp Test tab.</div>';
     return;
   }
   if (!rows.length){
-    box.innerHTML = '<p class="up-hint" style="margin:0">No unit tests have been taken yet.</p>';
+    box.innerHTML = '<p class="up-hint" style="margin:0">No CEFR LevelUp Tests have been taken yet.</p>';
     return;
   }
   const head = '<tr><th class="nm" style="text-align:left">Student</th>' +
@@ -5887,7 +5998,7 @@ async function refreshUnitScores(){
   }).join('');
   box.innerHTML = '<div class="table-scroll"><table class="ut-matrix"><thead>' + head +
     '</thead><tbody>' + body + '</tbody></table></div>' +
-    '<p class="up-hint" style="margin:10px 0 0">Each cell is the student\u2019s <b>highest</b> unit test score at that CEFR level.</p>';
+    '<p class="up-hint" style="margin:10px 0 0">Each cell is the student\u2019s <b>highest</b> CEFR LevelUp Test score at that CEFR level.</p>';
 }
 
 /* ---------------- startup ---------------- */
