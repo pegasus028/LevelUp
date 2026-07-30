@@ -1446,6 +1446,7 @@ async function loadStored(id){
  * ============================================================ */
 function renderAll(){
   if (typeof UT === 'object'){ UT.mode = 'idle'; UT.test = null; utStopClock(); }
+  autoUpliftDone = false;                       // a new assessment is loaded
   unlockTabs();
   S.cache = {};
   renderReport();
@@ -1459,6 +1460,10 @@ function renderAll(){
   $('vcount').textContent = vocabRows().length;
   $('gcount').textContent = grammarRows().length;
   $('vcount').style.display = $('gcount').style.display = '';
+  // Enhancement: automatically bring the response up to C1 (teacher only) so no
+  // manual per-level uplift is needed for Recommended upgrades / Vocabulary /
+  // Grammar. Runs after the initial render so the report shows immediately.
+  if (!IS_STUDENT) setTimeout(autoUpliftToC1, 50);
 }
 
 /* -------- 2 · report -------- */
@@ -1894,6 +1899,55 @@ function switchLevel(level){
     if (scr && scr.classList.contains('active')) renderUnitTest();
   }
 }
+/* Automatically bring the response up to C1 (the enhancement) so a teacher
+ * never has to click through each level. Runs once per loaded assessment, for
+ * teachers only. If the student is already at/above C1 there is nothing to
+ * uplift TO C1, so it simply shows their highest generated level. */
+let autoUpliftDone = false;
+async function autoUpliftToC1(){
+  if (IS_STUDENT || !current || autoUpliftDone) return;
+  autoUpliftDone = true;
+
+  const TARGET = 'C1';
+  const studentIdx = bandIdx((current.data.assessment && current.data.assessment.overallLevel) || 'B1');
+
+  // Already at or above C1 → nothing to generate; keep the existing view.
+  if (studentIdx >= bandIdx(TARGET)) return;
+
+  // Already generated → just switch to it.
+  if (current.data.upgrades[TARGET]){
+    if (activeLevel !== TARGET) switchLevel(TARGET);
+    return;
+  }
+  if (upgradeBusy) return;
+
+  upgradeBusy = true;
+  try {
+    loading(true, 'Uplifting to C1…',
+      'Claude is rewriting the response at C1 and cataloguing the new vocabulary and grammar. About a minute.');
+    const out = await api({
+      action:'upgrade_level',
+      savedId: current.data.savedId || '',
+      essay: current.essay,
+      prompt: (current.meta && current.meta.prompt) || '',
+      originalLevel: current.data.assessment.overallLevel,
+      targetLevel: TARGET
+    });
+    loading(false);
+    current.data.upgrades[TARGET] = out.level;
+    activeLevel = TARGET;
+    renderUpgrades(); renderVocabTable(); renderGrammarTable(); resetStudio();
+    renderCefrRow('upg-cefr-row');
+    if (out.saveWarning){ const n=$('vocab-note'); if(n){ n.className='tool-note err'; n.textContent='⚠ '+out.saveWarning; } }
+  } catch(err){
+    loading(false);
+    // Non-fatal: leave the default level in place and let the teacher retry.
+    const n=$('vocab-note');
+    if(n){ n.className='tool-note err'; n.textContent='Automatic C1 uplift failed: ' + err.message + ' — you can retry from the level buttons.'; }
+  }
+  upgradeBusy = false;
+}
+
 async function triggerUpgrade(level){
   if (upgradeBusy || IS_STUDENT) return;
   upgradeBusy = true;
@@ -5507,37 +5561,68 @@ function renderUnitTest(){
   UT.timed = true;                              // there is only ONE test per level: the timed exam
   renderCefrRow('ut-cefr-row');
   const spec = utLevelSpec(activeLevel);
-  const best = utBestAll();
-  const b = best[activeLevel];
 
+  // The best score belongs to the RESPONDENT whose file is open (current.meta.name),
+  // read from the Google Sheet — never whoever is viewing. For the student's own
+  // device we can show the local cache instantly and refresh from the server; a
+  // teacher always sees the loaded student's server-stored best.
+  const respondent = (current.meta && current.meta.name) || '';
+  const localBest = (IS_STUDENT && respondent && utLc(respondent) === utLc(AUTH.name || '')) ? utBestAll() : {};
+  renderUtBestGrid(localBest, spec);
+  utFetchRespondentBest(respondent, spec);
+}
+
+/* Draw the hero + best-score grid for a given best-map. */
+function renderUtBestGrid(best, spec){
+  best = best || {};
+  const b = best[activeLevel];
   const cells = BTN_BANDS.map(function(lv){
     const r = best[lv];
     return '<div class="ut-best' + (r ? ' has' : '') + '">' +
       '<div class="bl">' + lv + '</div><div class="bv">' + (r ? r.pct + '%' : '—') + '</div>' +
       '<div class="bd">' + (r ? (r.score + '/' + r.total) : 'not tried') + '</div></div>';
   }).join('');
-
-  const ring = utRingSvg(b ? b.pct : 0, b ? 'YOUR BEST' : 'NO SCORE YET');
+  const who = (!IS_STUDENT && current.meta && current.meta.name) ? esc(current.meta.name) + '\u2019s' : 'Your';
+  const ring = utRingSvg(b ? b.pct : 0, b ? 'BEST SCORE' : 'NO SCORE YET');
 
   $('ut-body-wrap').innerHTML =
     '<div class="ut-hero"><div>' +
       '<h3>' + esc(activeLevel) + ' CEFR LevelUp Test · ' + esc(spec.label) + '</h3>' +
-      '<p>One timed exam at each CEFR level, built from your own essay: the words and structures you were told to upgrade. ' +
-      'Vocabulary, grammar in context, sentence transformation, error spotting and reading.</p>' +
+      '<p>One timed exam at each CEFR level, built from ' + (IS_STUDENT ? 'your' : 'the student\u2019s') +
+      ' own essay: the words and structures ' + (IS_STUDENT ? 'you were' : 'they were') + ' told to upgrade. ' +
+      'Vocabulary, grammar in context, error spotting and reading.</p>' +
       '<p style="margin-top:6px;color:var(--ink-faint);font-size:.84rem">⏱ ' + spec.minutes +
       '-minute timer · ' + spec.opts + ' options per question · answers revealed at the end</p>' +
     '</div>' + ring + '</div>' +
-    '<div class="ut-bestgrid">' + cells + '</div>' +
-    '<p class="up-hint" style="margin:2px 0 12px">Your <b>best score</b> at each level. Retaking a level replaces your score only when you beat it. ' +
-    'Change the level above to sit a harder paper.</p>' +
-    '<button class="main" type="button" id="ut-start">' + (b ? '↻ Retake this exam' : '▶ Start the exam') + '</button>' +
+    '<div class="ut-bestgrid" id="ut-bestgrid">' + cells + '</div>' +
+    '<p class="up-hint" style="margin:2px 0 12px">' + who + ' <b>best score</b> at each level, saved to the Google Sheet. ' +
+    (IS_STUDENT ? 'Retaking a level replaces your score only when you beat it. Change the level above to sit a harder paper.'
+                : 'These are the respondent\u2019s own results; retaking is only available on the student\u2019s device.') + '</p>' +
+    (IS_STUDENT ? '<button class="main" type="button" id="ut-start">' + (b ? '↻ Retake this exam' : '▶ Start the exam') + '</button>' : '') +
     (IS_STUDENT ? '' :
-      '<div class="file-row" style="margin-top:14px">' +
+      '<div class="file-row" style="margin-top:8px">' +
       '<button class="ghost" type="button" id="ut-print">🖨 Open printable paper + answer key</button></div>') +
     '<div class="tool-note" id="ut-note"></div>';
 
-  $('ut-start').addEventListener('click', function(){ utStart(); });
+  const sb = $('ut-start'); if (sb) sb.addEventListener('click', function(){ utStart(); });
   const pb = $('ut-print'); if (pb) pb.addEventListener('click', utPrintPaper);
+}
+
+/* Pull the respondent's best scores from the sheet and repaint the grid. */
+async function utFetchRespondentBest(name, spec){
+  if (!name) return;
+  try {
+    const out = await api({ action:'unittest_student', name: name });
+    if (out && out.best){
+      // Keep the student's own local cache in step with the server.
+      if (IS_STUDENT && utLc(name) === utLc(AUTH.name || '')) utBestSave(out.best);
+      // Only repaint if the test tab is still showing its home screen.
+      if (UT.mode !== 'running' && UT.mode !== 'review' &&
+          $('ut-bestgrid') && current && utLc((current.meta && current.meta.name) || '') === utLc(name)){
+        renderUtBestGrid(out.best, spec);
+      }
+    }
+  } catch(e){ /* offline or older backend — the local/empty grid already shows */ }
 }
 
 function utRingSvg(pct, label){
