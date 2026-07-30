@@ -1149,9 +1149,37 @@ function loading(on, stage, sub){
 async function api(body){
   const payload = Object.assign({}, body);
   if (AUTH.token && payload.action !== 'login') payload.token = AUTH.token;
-  const res = await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) }); // text/plain → no CORS preflight
-  if (!res.ok) throw new Error('Server error ' + res.status);
-  const data = await res.json();
+  let res;
+  try {
+    res = await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) }); // text/plain → no CORS preflight
+  } catch(networkErr){
+    throw new Error('Could not reach the server. Check your internet connection and that the backend URL is correct.');
+  }
+  if (!res.ok){
+    // Apps Script Web App failures are almost always a deployment problem, not a
+    // code bug — translate the raw status into something the operator can act on.
+    if (res.status === 404){
+      throw new Error('Server error 404 — the Apps Script Web App URL is not live. ' +
+        'In the Apps Script editor: Deploy → Manage deployments → (edit the active deployment) → ' +
+        'Version: New version → Deploy, then paste the fresh /exec URL into API_URL. ' +
+        '(A 404 usually means the code was edited but not re-deployed, or the deployment was removed.)');
+    }
+    if (res.status === 401 || res.status === 403){
+      throw new Error('Server error ' + res.status + ' — access denied. Re-deploy with ' +
+        '“Execute as: Me” and “Who has access: Anyone”, then use the new /exec URL.');
+    }
+    if (res.status >= 500){
+      throw new Error('Server error ' + res.status + ' — the backend script threw an error. ' +
+        'Open the Apps Script editor → Executions to see the failing run.');
+    }
+    throw new Error('Server error ' + res.status);
+  }
+  let data;
+  try { data = await res.json(); }
+  catch(parseErr){
+    throw new Error('The server did not return valid data. This usually means the Web App needs to be ' +
+      're-deployed as a New version after the latest code change.');
+  }
   if (!data.ok){
     if (data.auth && payload.action !== 'login') authLost(data.error);
     throw new Error(data.error || 'Unknown server error');
@@ -2027,51 +2055,56 @@ function switchLevel(level){
     if (scr && scr.classList.contains('active')) renderUnitTest();
   }
 }
-/* Automatically bring the response up to C1 (the enhancement) so a teacher
- * never has to click through each level. Runs once per loaded assessment, for
- * teachers only. If the student is already at/above C1 there is nothing to
- * uplift TO C1, so it simply shows their highest generated level. */
+/* Automatically bring the response up to the key upgrade levels (B2 and C1) so
+ * a teacher never has to click through each level and the Main Point tab covers
+ * both. Runs once per loaded assessment, for teachers only. Only levels ABOVE
+ * the student's own assessed level are generated. */
 let autoUpliftDone = false;
 async function autoUpliftToC1(){
   if (IS_STUDENT || !current || autoUpliftDone) return;
   autoUpliftDone = true;
 
-  const TARGET = 'C1';
   const studentIdx = bandIdx((current.data.assessment && current.data.assessment.overallLevel) || 'B1');
+  // Generate B2 first, then C1 — each only if it is above the student's level.
+  const wanted = ['B2', 'C1'].filter(function(lv){ return bandIdx(lv) > studentIdx; });
+  if (!wanted.length) return;                    // student already ≥ C1
 
-  // Already at or above C1 → nothing to generate; keep the existing view.
-  if (studentIdx >= bandIdx(TARGET)) return;
+  const toGen = wanted.filter(function(lv){ return !current.data.upgrades[lv]; });
 
-  // Already generated → just switch to it.
-  if (current.data.upgrades[TARGET]){
-    if (activeLevel !== TARGET) switchLevel(TARGET);
+  // Nothing to generate — just show the highest one that already exists.
+  if (!toGen.length){
+    const highest = wanted[wanted.length - 1];
+    if (current.data.upgrades[highest] && activeLevel !== highest) switchLevel(highest);
     return;
   }
   if (upgradeBusy) return;
 
   upgradeBusy = true;
   try {
-    loading(true, 'Uplifting to C1…',
-      'Claude is rewriting the response at C1 and cataloguing the new vocabulary and grammar. About a minute.');
-    const out = await api({
-      action:'upgrade_level',
-      savedId: current.data.savedId || '',
-      essay: current.essay,
-      prompt: (current.meta && current.meta.prompt) || '',
-      originalLevel: current.data.assessment.overallLevel,
-      targetLevel: TARGET
-    });
+    for (let i = 0; i < toGen.length; i++){
+      const TARGET = toGen[i];
+      loading(true, 'Uplifting to ' + TARGET + '…',
+        'Claude is rewriting the response at ' + TARGET + ', cataloguing the vocabulary and grammar, and building the Main Point synthesis. About a minute per level.');
+      const out = await api({
+        action:'upgrade_level',
+        savedId: current.data.savedId || '',
+        essay: current.essay,
+        prompt: (current.meta && current.meta.prompt) || '',
+        originalLevel: current.data.assessment.overallLevel,
+        targetLevel: TARGET
+      });
+      current.data.upgrades[TARGET] = out.level;
+      if (out.saveWarning){ const n=$('vocab-note'); if(n){ n.className='tool-note err'; n.textContent='⚠ '+out.saveWarning; } }
+    }
     loading(false);
-    current.data.upgrades[TARGET] = out.level;
-    activeLevel = TARGET;
+    // Land on the highest generated level.
+    activeLevel = wanted[wanted.length - 1];
     renderUpgrades(); if(typeof renderMainPoint==="function") renderMainPoint(); renderVocabTable(); renderGrammarTable(); resetStudio();
     renderCefrRow('upg-cefr-row');
-    if (out.saveWarning){ const n=$('vocab-note'); if(n){ n.className='tool-note err'; n.textContent='⚠ '+out.saveWarning; } }
   } catch(err){
     loading(false);
-    // Non-fatal: leave the default level in place and let the teacher retry.
     const n=$('vocab-note');
-    if(n){ n.className='tool-note err'; n.textContent='Automatic C1 uplift failed: ' + err.message + ' — you can retry from the level buttons.'; }
+    if(n){ n.className='tool-note err'; n.textContent='Automatic uplift failed: ' + err.message + ' — you can generate levels from the level buttons.'; }
   }
   upgradeBusy = false;
 }
@@ -5725,8 +5758,9 @@ function renderUtBestGrid(best, spec){
     '<div class="ut-bestgrid" id="ut-bestgrid">' + cells + '</div>' +
     '<p class="up-hint" style="margin:2px 0 12px">' + who + ' <b>best score</b> at each level, saved to the Google Sheet. ' +
     (IS_STUDENT ? 'Retaking a level replaces your score only when you beat it. Change the level above to sit a harder paper.'
-                : 'These are the respondent\u2019s own results; retaking is only available on the student\u2019s device.') + '</p>' +
-    (IS_STUDENT ? '<button class="main" type="button" id="ut-start">' + (b ? '↻ Retake this exam' : '▶ Start the exam') + '</button>' : '') +
+                : 'These are the respondent\u2019s own results, written only from their own device. Taking the exam here is a <b>preview</b> and is never saved to the sheet.') + '</p>' +
+    '<button class="main" type="button" id="ut-start">' +
+      (IS_STUDENT ? (b ? '↻ Retake this exam' : '▶ Start the exam') : '▶ Take exam (preview — not recorded)') + '</button>' +
     (IS_STUDENT ? '' :
       '<div class="file-row" style="margin-top:8px">' +
       '<button class="ghost" type="button" id="ut-print">🖨 Open printable paper + answer key</button></div>') +
@@ -6043,10 +6077,13 @@ function utSubmit(auto){
   const res = utScore();
   res.exam = true;
   res.isRetry = !!UT.retryOf;
+  res.preview = !IS_STUDENT;                     // a teacher-console run is a preview only
 
-  // The optional "retry the questions you missed" run is a review aid — it does
-  // not change the official best score and is not sent to the teacher.
-  if (!res.isRetry){
+  // Record the best score ONLY for a student sitting their own exam. A teacher
+  // "Take exam" run is a preview: it must never write the best score — not to
+  // the Google Sheet and not even to local storage. The "retry my misses" run
+  // is likewise a review aid and never counts.
+  if (IS_STUDENT && !res.isRetry){
     const best = utBestAll();
     const prev = best[UT.test.level];
     res.isBest = !prev || res.pct > prev.pct;
@@ -6055,7 +6092,7 @@ function utSubmit(auto){
                               at:Date.now(), paperCode:UT.test.paperCode };
       utBestSave(best);
     }
-    utSyncResult(res);
+    utSyncResult(res);                           // writes to the sheet against the student's Respondent ID
   }
 
   UT.lastRes = res; UT.autoEnded = !!auto;
@@ -6104,6 +6141,7 @@ function utRenderResults(){
       '<h2 style="margin-top:12px">' + res.score + ' out of ' + res.total + '</h2>' +
       '<p class="lede" style="margin:4px auto 0;max-width:44ch">' + esc(msg) + '</p>' +
       (res.isBest ? '<div class="ut-badge">★ New personal best at ' + esc(t.level) + '</div>' : '') +
+      (res.preview ? '<p class="up-hint" style="margin-top:8px">Preview run — this result is <b>not</b> recorded to the Google Sheet. Only a student\u2019s own attempt writes a best score.</p>' : '') +
       (res.isRetry ? '<p class="up-hint" style="margin-top:8px">This was a review of your missed questions — it does not change your best score.</p>' : '') +
       (UT.autoEnded ? '<p class="up-hint" style="margin-top:8px">Time ran out — unanswered questions were marked wrong.</p>' : '') +
       '<div class="ut-parts">' + bars + '</div>' +
