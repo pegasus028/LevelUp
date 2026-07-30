@@ -4137,6 +4137,61 @@ function utVocabDistractors(rng, v, allVocab, want){
 }
 
 /* ---------- MCQ assembly ---------- */
+/* Inflect a base word to match the grammatical FORM of a model surface word,
+ * so cloze distractors share the answer's shape (e.g. if the gap needs the
+ * base verb "develop", distractors are "expand", "reduce" — never "expands"
+ * or "secured"). Only handles the regular verb forms the test relies on. */
+function utFormOf(surface, base){
+  const s = utLc(surface).replace(/[^a-z']/g, '');
+  const b = utLc(base);
+  if (s === b) return 'base';
+  if (s === utLc(utPresOf(b, true))) return 'third';     // develops
+  if (s === utLc(utPastOf(b))) return 'past';            // developed
+  if (s === utLc(utIngOf(b))) return 'ing';              // developing
+  if (s === b + 's' || s === b + 'es') return 'plural';  // noun plural
+  return 'as-is';
+}
+function utApplyForm(word, form){
+  const base = utBaseOf(word);
+  switch (form){
+    case 'third':  return utPresOf(base, true);
+    case 'past':   return utPastOf(base);
+    case 'ing':    return utIngOf(base);
+    case 'plural': return /s$/i.test(word) ? word : (/(s|x|z|ch|sh)$/i.test(word) ? word + 'es' : word + 's');
+    case 'base':   return base;
+    default:       return word;
+  }
+}
+
+/* Distractors for a CLOZE gap: same part of speech as the answer, inflected to
+ * the SAME grammatical form as the answer's surface word, drawn from other
+ * target vocabulary, never a synonym of the answer. This guarantees every
+ * option fits the slot grammatically, so the item tests meaning and has exactly
+ * one correct answer. Returns [] if it can't build enough clean options. */
+function utClozeDistractors(rng, v, surface, allVocab, want){
+  const myPos = utPos(v);
+  const form = utFormOf(surface, utVocabWord(v));
+  const banned = {};
+  banned[utLc(surface)] = 1;
+  banned[utLc(utVocabWord(v))] = 1;
+  utVocabList(v, 'synonyms').forEach(function(s){ banned[utLc(s)] = 1; });
+
+  const out = [];
+  const others = utShuffle(rng, allVocab.filter(function(o){
+    return o !== v && utVocabWord(o) && (!myPos || utPos(o) === myPos);   // same part of speech
+  }));
+  for (let i = 0; i < others.length && out.length < want; i++){
+    const cand = utVocabWord(others[i]);
+    const shaped = utClean(utApplyForm(cand, form));
+    const k = utLc(shaped);
+    if (!shaped || banned[k]) continue;
+    if (k.split(/\s+/).length > 2) continue;
+    banned[k] = 1;
+    out.push(shaped);
+  }
+  return out;
+}
+
 function utMakeItem(rng, spec){
   const opts = [spec.answer].concat(spec.distractors);
   const order = utShuffle(rng, opts.map(function(t, i){ return { t: t, correct: i === 0 }; }));
@@ -4217,17 +4272,23 @@ function utBuildCloze(rng, ctx, want){
   for (let j = first; j <= last; j++){
     const g = gapBySent[j];
     if (g){
-      const d = utVocabDistractors(rng, g.v, vocab, spec.opts - 1);
+      // The ANSWER must be the exact word form that appears in the essay
+      // ("wanted to develop" → answer "develop"), not the dictionary form of
+      // the vocab entry ("develops"). Otherwise the "correct" option would not
+      // fit the sentence. Distractors are then shaped to that same form so
+      // every option is grammatical and only one is right.
+      const surface = utClean(g.hit.text) || g.word;
+      const d = utClozeDistractors(rng, g.v, surface, vocab, spec.opts - 1);
       const s = {
         type: 'cloze', part: 1,
-        answer: g.word, distractors: d,
-        explain: '“' + g.word + '” means ' + utClean(g.v.definition || '') + ' — that is exactly what the gap needs here.',
+        answer: surface, distractors: d,
+        explain: '“' + surface + '” means ' + utClean(g.v.definition || '') + ' — that is exactly what the gap needs here.',
         teaches: g.word, ref: g.v.id || ''
       };
-      if (!utEnoughOptions(s, spec.opts)){
-        // Can't build clean options — leave the word in the text rather than
-        // dropping the whole sentence and breaking the passage.
-        passage.push({ text: g.v ? essaySents[j] : essaySents[j] });
+      if (d.length < spec.opts - 1 || !utEnoughOptions(s, spec.opts)){
+        // Can't build clean, same-form options — leave the word in the text
+        // rather than dropping the whole sentence and breaking the passage.
+        passage.push({ text: essaySents[j] });
         continue;
       }
       gapNo++;
