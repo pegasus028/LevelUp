@@ -4835,26 +4835,33 @@ function utSplitSegments(sentence){
 
 function utBuildErrorId(rng, ctx, want){
   const items = [];
-  const pool = utShuffle(rng, ctx.grammar.concat(ctx.grammar));
-  const usedSent = {};
 
+  // Build a rich pool of source sentences: the student's grammar-upgrade
+  // sentences first (best teaching value), then upgraded-essay sentences and
+  // vocabulary example sentences, so there is always enough material to make a
+  // full set of error-identification questions.
+  const grammarSents = ctx.grammar.map(function(g){ return { text: utClean(g.replacement), ref: g.id || '' }; });
+  const essaySents = (ctx.clozeSents || []).concat(ctx.readSents || [])
+    .map(function(s){ return { text: utClean(s), ref: '' }; });
+  const vocabSents = [];
+  (ctx.vocab || []).forEach(function(v){
+    utVocabList(v, 'examples').forEach(function(ex){ vocabSents.push({ text: utClean(ex), ref: v.id || '' }); });
+  });
+  const pool = utShuffle(rng, grammarSents)
+    .concat(utShuffle(rng, essaySents))
+    .concat(utShuffle(rng, vocabSents));
+
+  const usedSent = {};
   for (let i = 0; i < pool.length && items.length < want; i++){
-    const g = pool[i];
-    const up = utClean(g.replacement);
+    const src = pool[i];
+    const up = src.text;
     if (!up || usedSent[utLc(up)]) continue;
+    if (utTokens(up).length < 8) continue;                 // need enough to split into four parts
     const segs = utSplitSegments(up);
     if (!segs) continue;
 
-    // Prefer breaking the segment that carries the upgrade.
-    const chunk = utUpgradeChunk(utClean(g.original), up);
-    let order = [0, 1, 2, 3];
-    if (chunk){
-      const target = Math.min(3, Math.floor(chunk.from / Math.max(1, utTokens(up).length) * 4));
-      order = [target].concat(order.filter(function(x){ return x !== target; }));
-    } else {
-      order = utShuffle(rng, order);
-    }
-
+    // Try each quarter with a shuffled set of corruption rules until one bites.
+    const order = utShuffle(rng, [0, 1, 2, 3]);
     let done = null;
     for (let a = 0; a < order.length && !done; a++){
       const idx = order[a];
@@ -4875,13 +4882,13 @@ function utBuildErrorId(rng, ctx, want){
     shown[done.idx] = done.broken;
     shown[0] = utCap(shown[0]);
     items.push({
-      type: 'errorid', part: 4,
+      type: 'errorid', part: 3,
       segments: shown,
       answer: done.idx,
       correctSegment: segs[done.idx],
       options: ['1', '2', '3', '4'],
       explain: done.rule.why + ' It should read: “' + segs[done.idx] + '”.',
-      teaches: done.rule.name, ref: g.id || ''
+      teaches: done.rule.name, ref: src.ref
     });
   }
   return { items: items };
@@ -4949,7 +4956,7 @@ function utBuildReading(rng, ctx, want){
       seen[utLc(d)] = 1; defs.push(d);
     });
     const s = {
-      type: 'reading', part: 5,
+      type: 'reading', part: 4,
       stem: 'What does “' + utVocabWord(v) + '” mean in the passage?',
       answer: ansDef, distractors: defs,
       explain: 'In this passage “' + utVocabWord(v) + '” means ' + ansDef.replace(/\.$/, '') + '.',
@@ -4982,7 +4989,7 @@ function utBuildReading(rng, ctx, want){
     }
     if (dis.length >= spec.opts - 1){
       const s = {
-        type: 'reading', part: 5,
+        type: 'reading', part: 4,
         stem: spec.inference ? 'Which statement is supported by the passage?' : 'Which sentence is true according to the passage?',
         answer: correct, distractors: dis.slice(0, spec.opts - 1),
         explain: 'Only this statement matches the text. The others reverse what the passage actually says.',
@@ -5005,7 +5012,7 @@ function utBuildReading(rng, ctx, want){
       const trues = realSents.filter(function(s){ return utLc(s) !== utLc(falseOne); }).slice(0, spec.opts - 1);
       if (trues.length >= spec.opts - 1){
         const s = {
-          type: 'reading', part: 5,
+          type: 'reading', part: 4,
           stem: 'Which statement is NOT supported by the passage?',
           answer: falseOne, distractors: trues,
           explain: 'The passage states the opposite of this. The other three appear in the text.',
@@ -5026,9 +5033,8 @@ const UT_PART_META = [
   null,
   { n:1, title:'Vocabulary in context', instr:'Choose the best answer to fill in each blank.' },
   { n:2, title:'Grammar in context', instr:'Two classmates are talking about the topic. Choose the best option to complete each line.' },
-  { n:3, title:'Sentence transformation', instr:'Choose the sentence that best describes the situation.' },
-  { n:4, title:'Error identification', instr:'One underlined part of each sentence is wrong. Choose the number of the mistake.' },
-  { n:5, title:'Reading comprehension', instr:'Read the passage, then choose the best answer for each question.' }
+  { n:3, title:'Error identification', instr:'One underlined part of each sentence is wrong. Choose the number of the mistake.' },
+  { n:4, title:'Reading comprehension', instr:'Read the passage, then choose the best answer for each question.' }
 ];
 
 function utGenerateTest(opts){
@@ -5051,18 +5057,20 @@ function utGenerateTest(opts){
   };
   if (!ctx.readSents.length) ctx.readSents = allSents;
 
-  const target = { 1:5, 2:4, 3:4, 4:3, 5:4 };
+  // Four parts: vocabulary cloze, grammar dialogue, error identification,
+  // reading. (The old sentence-transformation part has been replaced by more
+  // error-identification questions.)
+  const target = { 1:5, 2:4, 3:7, 4:4 };
   const p1 = utBuildCloze(rng, ctx, target[1]);
   const p2 = utBuildDialogue(rng, ctx, target[2]);
-  const p3 = utBuildTransform(rng, ctx, target[3]);
-  const p4 = utBuildErrorId(rng, ctx, target[4]);
-  const p5 = utBuildReading(rng, ctx, target[5]);
+  const p3 = utBuildErrorId(rng, ctx, target[3]);     // error identification
+  const p4 = utBuildReading(rng, ctx, target[4]);     // reading comprehension
 
   // Top up toward 20 while keeping the paper balanced. No single part may
   // exceed a cap, so the exam never becomes half one question type — a
   // balanced 14-question paper beats a lopsided 20-question one.
-  const CAP = { 1:6, 2:5, 3:6, 4:5, 5:6 };
-  let total = p1.items.length + p2.items.length + p3.items.length + p4.items.length + p5.items.length;
+  const CAP = { 1:6, 2:5, 3:9, 4:6 };
+  let total = p1.items.length + p2.items.length + p3.items.length + p4.items.length;
 
   const growCloze = function(){
     if (total >= 20 || p1.items.length >= CAP[1]) return false;
@@ -5075,33 +5083,34 @@ function utGenerateTest(opts){
     return false;
   };
   const growReading = function(){
-    if (total >= 20 || p5.items.length >= CAP[5]) return false;
-    const have = {}; p5.items.forEach(function(it){ have[utLc(it.stem)] = 1; });
-    const extraR = utBuildReading(rng, ctx, p5.items.length + 2);
+    if (total >= 20 || p4.items.length >= CAP[4]) return false;
+    const have = {}; p4.items.forEach(function(it){ have[utLc(it.stem)] = 1; });
+    const extraR = utBuildReading(rng, ctx, p4.items.length + 2);
     for (let i = 0; i < extraR.items.length; i++){
-      if (total >= 20 || p5.items.length >= CAP[5]) break;
+      if (total >= 20 || p4.items.length >= CAP[4]) break;
       const it = extraR.items[i];
       if (have[utLc(it.stem)]) continue;
       have[utLc(it.stem)] = 1;
-      if (p5.items.indexOf(it) < 0){ p5.items.push(it); p5.passage = extraR.passage || p5.passage; total++; return true; }
+      if (p4.items.indexOf(it) < 0){ p4.items.push(it); p4.passage = extraR.passage || p4.passage; total++; return true; }
     }
     return false;
   };
-  const growTransform = function(){
+  const growErrorId = function(){
     if (total >= 20 || p3.items.length >= CAP[3]) return false;
-    const have = {}; p3.items.forEach(function(it){ have[utLc(it.options[it.answer] + '|' + it.stem)] = 1; });
-    const extraT = utBuildTransform(rng, ctx, p3.items.length + 3);
-    for (let i = 0; i < extraT.items.length; i++){
+    const have = {}; p3.items.forEach(function(it){ have[utLc(it.segments.join(' '))] = 1; });
+    const extra = utBuildErrorId(rng, ctx, p3.items.length + 3);
+    for (let i = 0; i < extra.items.length; i++){
       if (total >= 20 || p3.items.length >= CAP[3]) break;
-      const it = extraT.items[i];
-      const key = utLc(it.options[it.answer] + '|' + it.stem);
+      const it = extra.items[i];
+      const key = utLc(it.segments.join(' '));
       if (have[key]) continue;
       have[key] = 1;
       p3.items.push(it); total++; return true;
     }
     return false;
   };
-  const growers = [growCloze, growReading, growTransform];
+  // Error identification leads the top-up (it replaced the transform part).
+  const growers = [growErrorId, growCloze, growReading];
   let gi = 0, stagnant = 0;
   while (total < 20 && stagnant < growers.length){
     const grew = growers[gi % growers.length]();
@@ -5110,16 +5119,19 @@ function utGenerateTest(opts){
   }
 
   const parts = [];
-  const pushPart = function(idx, built, extra){
+  const pushPart = function(kind, built, extra){
     if (!built.items.length) return;
-    const meta = UT_PART_META[idx];
-    parts.push(Object.assign({ n: meta.n, title: meta.title, instruction: meta.instr, items: built.items }, extra || {}));
+    const meta = UT_PART_META[kind];
+    parts.push(Object.assign({ n: 0, kind: kind, title: meta.title, instruction: meta.instr, items: built.items }, extra || {}));
   };
   pushPart(1, p1, { passage: p1.passage });
   pushPart(2, p2, { lines: p2.lines, speakers: p2.speakers });
   pushPart(3, p3, {});
-  pushPart(4, p4, {});
-  pushPart(5, p5, { passage: p5.passage });
+  pushPart(4, p4, { passage: p4.passage });
+
+  // Give the parts that actually made it in consecutive numbers (Part 1, 2, 3…)
+  // so the student never sees a gap when a section produced no questions.
+  parts.forEach(function(p, i){ p.n = i + 1; });
 
   // Number the items 1..N across the whole paper.
   let n = 0;
@@ -5464,7 +5476,7 @@ function utPartOfItem(t, item){
 /* ---------- context block (cloze passage / dialogue / reading text) ---------- */
 function utContextHtml(t, part, item){
   if (!part) return '';
-  if (part.n === 1 && part.passage && part.passage.length){
+  if (part.kind === 1 && part.passage && part.passage.length){
     const curGap = part.items.indexOf(item) + 1;
     const rows = part.passage.map(function(seg){
       if (seg.text != null){ return esc(seg.text); }          // plain connecting sentence
@@ -5473,7 +5485,7 @@ function utContextHtml(t, part, item){
     }).join(' ');
     return '<div class="ut-context"><span class="cl">Read the text</span>' + rows + '</div>';
   }
-  if (part.n === 2 && part.lines && part.lines.length){
+  if (part.kind === 2 && part.lines && part.lines.length){
     const curGap = part.items.indexOf(item) + 1;
     const rows = part.lines.map(function(l){
       if (l.text != null){                                   // plain context line
@@ -5485,7 +5497,7 @@ function utContextHtml(t, part, item){
     }).join('');
     return '<div class="ut-context"><span class="cl">Conversation</span>' + rows + '</div>';
   }
-  if (part.n === 5 && part.passage){
+  if (part.kind === 4 && part.passage){
     return '<div class="ut-context"><span class="cl">Passage</span>' +
       utHighlightRef(part.passage, item && item.refWord) + '</div>';
   }
@@ -5631,7 +5643,7 @@ function utScore(){
   const t = UT.test;
   let score = 0;
   const byPart = {};
-  t.parts.forEach(function(p){ byPart[p.n] = { n:p.n, title:p.title, got:0, of:p.items.length }; });
+  t.parts.forEach(function(p){ byPart[p.n] = { n:p.n, kind:p.kind, title:p.title, got:0, of:p.items.length }; });
   t.items.forEach(function(it, i){
     const part = utPartOfItem(t, it);
     if (UT.answers[i] === it.answer){ score++; if (part) byPart[part.n].got++; }
@@ -5713,7 +5725,7 @@ function utRenderResults(){
       (weakest && weakest.got < weakest.of
         ? '<div class="ut-next"><b>Where to go next:</b> your weakest section was <b>Part ' + weakest.n + ' · ' +
           esc(weakest.title) + '</b> (' + weakest.got + '/' + weakest.of + '). ' +
-          esc(utAdvice(weakest.n)) + '</div>'
+          esc(utAdvice(weakest.kind)) + '</div>'
         : '') +
     '</div>' +
     '<div class="ut-foot">' +
@@ -5741,9 +5753,8 @@ function utAdvice(partN){
   const m = {
     1: 'Open the Vocabulary tab and run the study cards, then play the vocabulary game.',
     2: 'Open the Grammar tab study cards and use the "Why it works" box on each pattern.',
-    3: 'The Practice Gym rebuilds your own sentences at this level — that is the fastest fix.',
-    4: 'Play the grammar game: spotting errors is exactly what those rounds train.',
-    5: 'Re-read your upgraded essay on the Recommended upgrades tab, then retake this test.'
+    3: 'Play the grammar game: spotting errors is exactly what those rounds train.',
+    4: 'Re-read your upgraded essay on the Recommended upgrades tab, then retake this test.'
   };
   return m[partN] || '';
 }
@@ -5794,17 +5805,17 @@ function utPrintPaper(){
 
   t.parts.forEach(function(p){
     h += '<h2>Part ' + p.n + ' — ' + E(p.title) + '</h2><p class="instr">' + E(p.instruction) + '</p>';
-    if (p.n === 1 && p.passage && p.passage.length){
+    if (p.kind === 1 && p.passage && p.passage.length){
       h += '<div class="ctx">' + p.passage.map(function(s){
         if (s.text != null) return E(s.text);
         return E(s.before) + '___(' + s.n + ')___' + E(s.after); }).join(' ') + '</div>';
     }
-    if (p.n === 2 && p.lines){
+    if (p.kind === 2 && p.lines){
       h += '<div class="ctx">' + p.lines.map(function(l){
         if (l.text != null) return '<b>' + E(l.who) + ':</b> ' + E(l.text);
         return '<b>' + E(l.who) + ':</b> ' + E(l.before) + ' ___(' + l.n + ')___ ' + E(l.after); }).join('<br>') + '</div>';
     }
-    if (p.n === 5 && p.passage){
+    if (p.kind === 4 && p.passage){
       let refs = {};
       p.items.forEach(function(it){ if (it.refWord) refs[it.refWord] = 1; });
       let pass = E(p.passage);
