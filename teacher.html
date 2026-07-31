@@ -62,6 +62,39 @@ main{padding:clamp(22px,4vw,40px);}
 .mp-flow{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--ink-faint);font-size:.82rem;font-weight:600;letter-spacing:.04em;margin:4px 0 2px;flex-wrap:wrap;}
 .mp-flow span.pill{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:4px 12px;}
 .mp-placeholder{padding:22px;text-align:center;color:var(--ink-soft);background:var(--card);border:1px dashed var(--line);border-radius:12px;}
+/* ---- My Journey ---- */
+.jbadge{display:inline-block;background:var(--gold);color:#fff;font-size:.68rem;font-weight:700;border-radius:20px;padding:1px 8px;margin-left:6px;vertical-align:middle;letter-spacing:.02em;}
+.j-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;background:linear-gradient(120deg,var(--card),#fff);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:16px;flex-wrap:wrap;}
+.j-hello h2{margin:0;font-size:1.6rem;}
+.j-levelring{position:relative;text-align:center;}
+.j-rank{font-weight:700;color:var(--accent);font-size:.86rem;margin-top:2px;letter-spacing:.03em;}
+.j-next{display:flex;align-items:center;gap:16px;background:var(--accent-wash);border:1.5px solid var(--accent-soft);border-radius:14px;padding:16px 20px;margin-bottom:16px;}
+.j-next .jn-ic{font-size:1.8rem;}
+.j-next .jn-lbl{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);}
+.j-next .jn-txt{font-size:1.05rem;font-weight:600;color:var(--ink);}
+.j-next .jn-go{width:auto;margin:0 0 0 auto;min-width:120px;flex:none;}
+.j-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+@media (max-width:720px){ .j-stats{grid-template-columns:repeat(2,1fr);} .j-next{flex-wrap:wrap;} .j-next .jn-go{margin:8px 0 0 0;width:100%;} }
+.j-stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.03);}
+.j-stat .js-big{font-family:"Fraunces",serif;font-size:1.7rem;font-weight:700;color:var(--ink);line-height:1.1;}
+.j-stat .js-lbl{font-size:.82rem;color:var(--ink-soft);margin-top:3px;}
+.j-stat .js-sub{font-size:.72rem;color:var(--ink-faint);margin-top:4px;}
+.j-week{display:flex;gap:8px;}
+.jday{flex:1;aspect-ratio:1;max-width:52px;border-radius:10px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink-faint);font-size:.85rem;}
+.jday.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(155,44,30,.25);}
+.j-goalrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.95rem;}
+.j-goalsel{font-family:inherit;font-size:1rem;font-weight:700;color:var(--accent);border:1.5px solid var(--line);border-radius:9px;padding:6px 12px;background:#fff;cursor:pointer;}
+.j-badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;}
+.jbadge-card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 12px;text-align:center;transition:.15s;}
+.jbadge-card .jb-icon{font-size:1.8rem;line-height:1;}
+.jbadge-card .jb-name{font-weight:700;font-size:.9rem;margin-top:6px;color:var(--ink);}
+.jbadge-card .jb-desc{font-size:.74rem;color:var(--ink-soft);margin-top:3px;}
+.jbadge-card.locked{opacity:.45;filter:grayscale(1);}
+#prog-toast{position:fixed;right:20px;bottom:20px;z-index:9999;pointer-events:none;opacity:0;transform:translateY(12px);transition:.35s;}
+#prog-toast.show{opacity:1;transform:translateY(0);}
+#prog-toast .pt-card{background:var(--ink);color:#fff;border-radius:14px;padding:14px 18px;box-shadow:0 8px 30px rgba(0,0,0,.28);min-width:190px;}
+#prog-toast .pt-xp{font-family:"Fraunces",serif;font-size:1.35rem;font-weight:700;color:var(--gold);}
+#prog-toast .pt-line{font-size:.9rem;margin-top:4px;}
 .mp-steps{margin:0;padding-left:20px;}
 .mp-steps li{margin:0 0 8px;line-height:1.55;}
 .pane.mp-reflect{border-left:4px solid var(--gold);}
@@ -666,6 +699,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
   <nav class="tabs" id="tabs">
     <button class="tab active" data-screen="login" id="tab-login" style="display:none">Login</button>
     <button class="tab active" data-screen="assess" id="tab-assess">1 &middot; Assessment</button>
+    <button class="tab" data-screen="journey" id="tab-journey" disabled style="display:none">⭐ My Journey</button>
     <button class="tab" data-screen="report" id="tab-report" disabled>2 &middot; Report</button>
     <button class="tab" data-screen="main-point" id="tab-main-point" disabled>3 &middot; Main Point</button>
     <button class="tab" data-screen="upgrades" id="tab-upgrades" disabled>4 &middot; Recommended upgrades</button>
@@ -772,6 +806,11 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
         <span class="save-note" id="save-note" style="display:none"></span>
       </div>
       <div id="report-body"></div>
+    </section>
+
+    <!-- ============ ⭐ MY JOURNEY (student) ============ -->
+    <section class="screen" id="screen-journey">
+      <div id="journey-body"></div>
     </section>
 
     <!-- ============ 3 · MAIN POINT ============ -->
@@ -1208,9 +1247,12 @@ function showScreen(name){
   window.scrollTo({top:0, behavior:'smooth'});
   if (name === 'unittest' && typeof renderUnitTest === 'function') renderUnitTest();
   if (name === 'main-point' && typeof renderMainPoint === 'function') renderMainPoint();
+  if (name === 'journey' && typeof renderJourney === 'function') renderJourney();
   if (name === 'class' && !IS_STUDENT && typeof refreshUnitScores === 'function' && !CLS.utLoaded){ CLS.utLoaded = true; refreshUnitScores(); }
 }
-function unlockTabs(){ tabs.forEach(t => { const s = t.dataset.screen; if (s==='login' || s==='class') return; if (IS_STUDENT && s==='assess') return; if (!IS_STUDENT && s==='practice') return; t.disabled = false; }); }
+function unlockTabs(){ tabs.forEach(t => { const s = t.dataset.screen; if (s==='login' || s==='class') return; if (IS_STUDENT && s==='assess') return; if (!IS_STUDENT && (s==='practice' || s==='journey')) return; t.disabled = false; }); }
+/* Students land on their motivating "My Journey" home; teachers on the Report. */
+function landScreen(){ return (IS_STUDENT && current) ? 'journey' : 'report'; }
 window.printScreen = function(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('print-target', s.id===id));
   window.print();
@@ -1236,6 +1278,8 @@ function configureRole(){
   document.title = 'LevelUp English';
   $('tab-assess').style.display = 'none';
   $('tab-practice').style.display = '';
+  $('tab-journey').style.display = '';
+  $('tab-journey').innerHTML = '⭐ My Journey';
   $('tab-report').innerHTML = '1 &middot; Report';
   $('tab-main-point').innerHTML = '2 &middot; Main Point';
   $('tab-upgrades').innerHTML = '3 &middot; Recommended upgrades';
@@ -1309,7 +1353,7 @@ function applyLoginResult(out){
     current = { meta: out.record.meta, essay: out.record.essay, data: migrateClientData(out.record.data) };
     activeLevel = current.data.defaultLevel;
     renderAll();
-    showScreen('report');
+    showScreen(landScreen());
   } else {
     renderNoRecord();
   }
@@ -1502,7 +1546,7 @@ async function loadStored(id){
     current.data.saveWarning = null;
     activeLevel = current.data.defaultLevel;
     renderAll();
-    showScreen('report');
+    showScreen(landScreen());
   } catch(err){ loading(false); showErr(err.message); }
 }
 
@@ -1521,6 +1565,7 @@ function renderAll(){
   renderGrammarTable();
   resetStudio();
   if (IS_STUDENT) renderPractice();
+  if (IS_STUDENT && typeof renderJourney === 'function'){ renderJourney(); refreshJourneyBadge(); }
   const ib = $('ilp-btn');
   if (ib) ib.style.display = (!IS_STUDENT && current.data.savedId) ? '' : 'none';
   $('vcount').textContent = vocabRows().length;
@@ -2683,6 +2728,259 @@ function weakWords(){
     .filter(w => { const m = store[w]; return !m || m.s === 0 || (m.c / m.s) < 0.7; });
 }
 
+/* =====================================================================
+ * PROGRESS ENGINE — streak, XP/level, badges and a personal goal.
+ * All stored locally per signed-in student. Designed to give a
+ * 15-year-old the "one more day / one more level" pull: visible daily
+ * streaks, XP that grows with real work, collectible achievements, and
+ * an always-clear next step. No backend needed.
+ * =================================================================== */
+const XP = {
+  vocab_game: 12, grammar_game: 12, boss_win: 40, gym_rep: 8, gym_perfect: 15,
+  exam_done: 30, exam_pass: 60, exam_best: 25, read_upgrade: 6, main_point: 10,
+  daily_first: 20               // first activity of a new day
+};
+const LEVEL_STEP = 120;         // XP per app-level (Novice → Explorer → …)
+const RANKS = ['Rookie','Explorer','Achiever','Scholar','Wordsmith','Linguist','Virtuoso'];
+
+function progKey(){ return 'lue_prog_' + (AUTH.name || 'anon'); }
+function progLoad(){
+  try {
+    const p = JSON.parse(localStorage.getItem(progKey()) || '{}');
+    return Object.assign({ xp:0, streak:0, best_streak:0, last_active:'', days:[], badges:{}, counts:{}, goal:'' }, p);
+  } catch(e){ return { xp:0, streak:0, best_streak:0, last_active:'', days:[], badges:{}, counts:{}, goal:'' }; }
+}
+function progSave(p){ try { localStorage.setItem(progKey(), JSON.stringify(p)); } catch(e){} }
+function todayStr(){ const d = new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function daysBetween(a, b){
+  const pa = a.split('-').map(Number), pb = b.split('-').map(Number);
+  const da = new Date(pa[0], pa[1]-1, pa[2]), db = new Date(pb[0], pb[1]-1, pb[2]);
+  return Math.round((db - da) / 86400000);
+}
+function progLevel(xp){ return Math.floor(xp / LEVEL_STEP) + 1; }
+function progRank(lvl){ return RANKS[Math.min(RANKS.length-1, Math.floor((lvl-1)/2))]; }
+
+/* Award XP for an action, update the daily streak, and unlock any badges.
+ * Returns a summary the caller can use to show a toast. Students only. */
+function awardXP(kind, meta){
+  if (!IS_STUDENT) return null;
+  const p = progLoad();
+  const today = todayStr();
+  let gained = XP[kind] || 0;
+  const events = [];
+
+  // --- daily streak ---
+  if (p.last_active !== today){
+    const gap = p.last_active ? daysBetween(p.last_active, today) : 999;
+    if (gap === 1) p.streak = (p.streak || 0) + 1;
+    else p.streak = 1;                        // reset (or first ever)
+    p.last_active = today;
+    p.best_streak = Math.max(p.best_streak || 0, p.streak);
+    gained += XP.daily_first;
+    events.push({ type:'streak', streak:p.streak });
+    p.days = (p.days || []); if (p.days.indexOf(today) < 0) p.days.push(today);
+    if (p.days.length > 60) p.days = p.days.slice(-60);
+  }
+
+  const beforeLevel = progLevel(p.xp);
+  p.xp = (p.xp || 0) + gained;
+  const afterLevel = progLevel(p.xp);
+  if (afterLevel > beforeLevel) events.push({ type:'levelup', level:afterLevel, rank:progRank(afterLevel) });
+
+  // --- counters (used by badges & the journey stats) ---
+  p.counts = p.counts || {};
+  p.counts[kind] = (p.counts[kind] || 0) + 1;
+
+  // --- badges ---
+  const unlock = function(id){ if (!p.badges[id]){ p.badges[id] = today; events.push({ type:'badge', id:id }); } };
+  const c = p.counts;
+  if (kind === 'daily_first' || events.some(e=>e.type==='streak')){
+    if (p.streak >= 3) unlock('streak3');
+    if (p.streak >= 7) unlock('streak7');
+    if (p.streak >= 30) unlock('streak30');
+  }
+  if ((c.vocab_game||0) + (c.grammar_game||0) >= 1) unlock('firstgame');
+  if ((c.vocab_game||0) + (c.grammar_game||0) >= 10) unlock('gamer10');
+  if ((c.gym_rep||0) >= 1) unlock('firstgym');
+  if ((c.gym_rep||0) >= 25) unlock('gym25');
+  if ((c.exam_done||0) >= 1) unlock('firstexam');
+  if ((c.exam_pass||0) >= 1) unlock('exampass');
+  if ((c.boss_win||0) >= 1) unlock('bossslayer');
+  if (masteredCount() >= 25) unlock('words25');
+  if (masteredCount() >= 100) unlock('words100');
+  if (afterLevel >= 5) unlock('level5');
+
+  progSave(p);
+  const summary = { gained:gained, xp:p.xp, level:afterLevel, streak:p.streak, events:events };
+  progToast(summary);
+  refreshJourneyBadge();
+  return summary;
+}
+
+const BADGE_DEFS = {
+  streak3:    { icon:'🔥', name:'On a roll',        desc:'3-day study streak' },
+  streak7:    { icon:'⚡', name:'Week warrior',      desc:'7-day study streak' },
+  streak30:   { icon:'🏆', name:'Unstoppable',      desc:'30-day study streak' },
+  firstgame:  { icon:'🎮', name:'Game on',          desc:'Played your first quest' },
+  gamer10:    { icon:'🕹️', name:'Quest master',     desc:'Played 10 quests' },
+  firstgym:   { icon:'💪', name:'Warming up',       desc:'First Practice Gym rep' },
+  gym25:      { icon:'🏋️', name:'Gym regular',      desc:'25 Practice Gym reps' },
+  firstexam:  { icon:'📝', name:'Exam rookie',      desc:'Finished your first exam' },
+  exampass:   { icon:'✅', name:'Passed!',          desc:'Scored 60%+ on an exam' },
+  bossslayer: { icon:'⚔️', name:'Boss slayer',      desc:'Won a Boss Battle' },
+  words25:    { icon:'📚', name:'Word collector',   desc:'Mastered 25 words' },
+  words100:   { icon:'🧠', name:'Vocabulary hero',  desc:'Mastered 100 words' },
+  level5:     { icon:'🌟', name:'Rising star',      desc:'Reached level 5' }
+};
+
+function masteredCount(){
+  const m = masteryStore(); let n = 0;
+  Object.keys(m).forEach(function(w){ const x = m[w]; if (x && x.s > 0 && (x.c / x.s) >= 0.7 && x.c >= 2) n++; });
+  return n;
+}
+
+/* Small celebratory toast in the corner. */
+let progToastTimer = null;
+function progToast(sum){
+  if (!sum || (!sum.gained && !sum.events.length)) return;
+  let host = document.getElementById('prog-toast');
+  if (!host){ host = document.createElement('div'); host.id = 'prog-toast'; document.body.appendChild(host); }
+  const lines = [];
+  if (sum.gained) lines.push('<div class="pt-xp">+' + sum.gained + ' XP</div>');
+  sum.events.forEach(function(e){
+    if (e.type === 'streak' && e.streak >= 2) lines.push('<div class="pt-line">🔥 ' + e.streak + '-day streak!</div>');
+    if (e.type === 'levelup') lines.push('<div class="pt-line">🎉 Level ' + e.level + ' — ' + esc(e.rank) + '!</div>');
+    if (e.type === 'badge'){ const b = BADGE_DEFS[e.id]; if (b) lines.push('<div class="pt-line">' + b.icon + ' Badge: <b>' + esc(b.name) + '</b></div>'); }
+  });
+  if (!lines.length) return;
+  host.innerHTML = '<div class="pt-card">' + lines.join('') + '</div>';
+  host.classList.add('show');
+  clearTimeout(progToastTimer);
+  progToastTimer = setTimeout(function(){ host.classList.remove('show'); }, 3600);
+}
+
+function refreshJourneyBadge(){
+  const p = progLoad();
+  const tab = document.getElementById('tab-journey');
+  if (tab && IS_STUDENT){
+    const lvl = progLevel(p.xp);
+    tab.innerHTML = '⭐ My Journey <span class="jbadge">Lv ' + lvl + (p.streak>=2?(' · 🔥'+p.streak):'') + '</span>';
+  }
+}
+
+/* Decide the single most useful next action to nudge the student toward. */
+function journeyNextStep(){
+  const p = progLoad(), today = todayStr();
+  const studiedToday = p.last_active === today;
+  const a = current && current.data && current.data.assessment;
+  // 1) Keep the streak alive first.
+  if (!studiedToday){
+    return { label:'Keep your streak alive — play a 2-minute Vocabulary Quest', go:function(){ showScreen('vocab'); }, icon:'🔥' };
+  }
+  // 2) If there are weak words, drill them.
+  if (typeof weakWords === 'function' && current && weakWords().length >= 3){
+    return { label:'Master your ' + weakWords().length + ' tricky words in the Vocabulary game', go:function(){ showScreen('vocab'); }, icon:'📚' };
+  }
+  // 3) Try the exam at their level.
+  if (a){
+    return { label:'Test yourself in the CEFR LevelUp Test', go:function(){ showScreen('unittest'); }, icon:'📝' };
+  }
+  return { label:'Explore your Recommended upgrades', go:function(){ showScreen('upgrades'); }, icon:'⬆️' };
+}
+
+function renderJourney(){
+  const body = $('journey-body');
+  if (!body) return;
+  const p = progLoad();
+  const lvl = progLevel(p.xp), rank = progRank(lvl);
+  const intoLevel = p.xp % LEVEL_STEP, pctLevel = Math.round(intoLevel / LEVEL_STEP * 100);
+  const name = (current && current.meta && current.meta.name) || AUTH.name || 'there';
+  const assessed = (current && current.data && current.data.assessment && current.data.assessment.overallLevel) || '';
+  const mastered = masteredCount();
+  const step = journeyNextStep();
+
+  // Goal selector (target CEFR level) with progress from assessed → goal.
+  const goal = p.goal || (assessed ? BANDS[Math.min(BANDS.length-1, bandIdx(assessed)+1)] : 'B2');
+  const goalOptions = BTN_BANDS.map(function(b){
+    return '<option value="' + b + '"' + (b===goal?' selected':'') + '>' + b + '</option>';
+  }).join('');
+  let goalPct = 0;
+  if (assessed){
+    const span = Math.max(1, bandIdx(goal) - bandIdx(assessed));
+    goalPct = Math.max(0, Math.min(100, Math.round((0 /* start */ ) + (bandIdx(assessed) >= bandIdx(goal) ? 100 : (100/span) * 0))));
+    // Progress toward the goal is driven by mastered words + exams as a friendly proxy.
+    const drive = Math.min(1, (mastered/60) * 0.6 + ((p.counts&&p.counts.exam_pass)||0)/3 * 0.4);
+    goalPct = bandIdx(assessed) >= bandIdx(goal) ? 100 : Math.round(drive * 100);
+  }
+
+  // Streak calendar — last 7 days.
+  const dset = {}; (p.days||[]).forEach(function(d){ dset[d]=1; });
+  const cells = [];
+  for (let i = 6; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    const on = dset[key];
+    cells.push('<div class="jday' + (on?' on':'') + '" title="' + key + '">' +
+      ['S','M','T','W','T','F','S'][d.getDay()] + '</div>');
+  }
+
+  // Badges.
+  const badgeHtml = Object.keys(BADGE_DEFS).map(function(id){
+    const got = p.badges && p.badges[id];
+    const b = BADGE_DEFS[id];
+    return '<div class="jbadge-card' + (got?'':' locked') + '" title="' + esc(b.desc) + '">' +
+      '<div class="jb-icon">' + b.icon + '</div><div class="jb-name">' + esc(b.name) + '</div>' +
+      '<div class="jb-desc">' + esc(b.desc) + '</div></div>';
+  }).join('');
+  const gotCount = Object.keys(p.badges||{}).length;
+
+  body.innerHTML =
+    '<div class="j-hero">' +
+      '<div class="j-hello"><h2>Hi ' + esc(name) + ' 👋</h2>' +
+        '<p class="lede" style="margin:2px 0 0">' + (assessed?('You\u2019re working at <b>'+esc(assessed)+'</b>. '):'') + 'Here\u2019s your journey so far — keep it going!</p></div>' +
+      '<div class="j-levelring">' + utRingSvg(pctLevel, 'LEVEL ' + lvl) +
+        '<div class="j-rank">' + esc(rank) + '</div></div>' +
+    '</div>' +
+
+    // Next step — the single clear call to action
+    '<div class="j-next" id="j-next"><span class="jn-ic">' + step.icon + '</span>' +
+      '<div><div class="jn-lbl">Do this next</div><div class="jn-txt">' + esc(step.label) + '</div></div>' +
+      '<button class="main jn-go" type="button" id="j-go">Let\u2019s go →</button></div>' +
+
+    // Stat cards
+    '<div class="j-stats">' +
+      '<div class="j-stat"><div class="js-big">🔥 ' + (p.streak||0) + '</div><div class="js-lbl">day streak</div>' +
+        '<div class="js-sub">best: ' + (p.best_streak||0) + '</div></div>' +
+      '<div class="j-stat"><div class="js-big">' + (p.xp||0) + '</div><div class="js-lbl">total XP</div>' +
+        '<div class="js-sub">' + (LEVEL_STEP - intoLevel) + ' to level ' + (lvl+1) + '</div></div>' +
+      '<div class="j-stat"><div class="js-big">📚 ' + mastered + '</div><div class="js-lbl">words mastered</div>' +
+        '<div class="js-sub">keep playing to grow this</div></div>' +
+      '<div class="j-stat"><div class="js-big">🏅 ' + gotCount + '/' + Object.keys(BADGE_DEFS).length + '</div><div class="js-lbl">badges earned</div>' +
+        '<div class="js-sub">collect them all!</div></div>' +
+    '</div>' +
+
+    // Streak calendar
+    '<div class="pane"><div class="pane-title">Your week</div>' +
+      '<div class="j-week">' + cells.join('') + '</div>' +
+      '<p class="up-hint" style="margin:10px 0 0">Study a little every day to keep the 🔥 going. Even two minutes counts!</p></div>' +
+
+    // Goal
+    '<div class="pane"><div class="pane-title">🎯 My goal</div>' +
+      '<div class="j-goalrow"><span>I want to reach</span>' +
+        '<select id="j-goal" class="j-goalsel">' + goalOptions + '</select>' +
+        (assessed?('<span class="js-sub">from ' + esc(assessed) + '</span>'):'') + '</div>' +
+      '<div class="bar-wrap" style="height:16px;border-radius:9px;margin-top:12px"><div class="bar-fill" style="width:' + goalPct + '%;border-radius:9px"></div></div>' +
+      '<p class="up-hint" style="margin:8px 0 0">' + goalPct + '% of the way there (based on words mastered and exams passed). Every game, gym rep and exam moves the bar.</p></div>' +
+
+    // Badges
+    '<div class="pane"><div class="pane-title">🏅 Achievements</div>' +
+      '<div class="j-badges">' + badgeHtml + '</div></div>';
+
+  const go = $('j-go'); if (go) go.addEventListener('click', function(){ const s=journeyNextStep(); s.go(); });
+  const gs = $('j-goal'); if (gs) gs.addEventListener('change', function(){ const pp=progLoad(); pp.goal=gs.value; progSave(pp); renderJourney(); });
+  refreshJourneyBadge();
+}
+
 $('vocab-play-btn').addEventListener('click', () => launchGame('vocab'));
 $('grammar-play-btn').addEventListener('click', () => launchGame('grammar'));
 const _wk = $('vocab-weak-btn');
@@ -3147,6 +3445,11 @@ function renderFinal(){
   feedback('', '');
   G.mode = 'done';
   setAction('Done');
+  // Reward the effort — drives the streak, XP and badges on My Journey.
+  if (typeof awardXP === 'function'){
+    if (G.boss){ if (pct >= 60) awardXP('boss_win'); }
+    else { awardXP(G.pack.kind === 'grammar' ? 'grammar_game' : 'vocab_game'); }
+  }
   const bossBtn = document.getElementById('g-boss');
   if (bossBtn) bossBtn.addEventListener('click', () => {
     startGame({ kind:G.pack.kind, level:G.pack.level, targetLevel:G.pack.targetLevel, name:G.pack.name, rounds:missedRounds }, true);
@@ -3511,8 +3814,10 @@ async function checkPractice(){
         P.streak++;
         try { const b = Number(localStorage.getItem(prBestKey())||0); if (P.streak > b) localStorage.setItem(prBestKey(), String(P.streak)); } catch(e){}
         comboPop('🔥 +1 streak');
+        if (typeof awardXP === 'function') awardXP('gym_perfect');
       } else {
         P.streak = 0;
+        if (typeof awardXP === 'function') awardXP('gym_rep');
       }
       const st = $('pr-streak'); if (st) st.textContent = P.streak;
       box.className = 'pr-result ' + (win ? 'good' : 'bad') + ' show';
@@ -6093,6 +6398,12 @@ function utSubmit(auto){
       utBestSave(best);
     }
     utSyncResult(res);                           // writes to the sheet against the student's Respondent ID
+    // My Journey rewards.
+    if (typeof awardXP === 'function'){
+      awardXP('exam_done');
+      if (res.pct >= 60) awardXP('exam_pass');
+      if (res.isBest) awardXP('exam_best');
+    }
   }
 
   UT.lastRes = res; UT.autoEnded = !!auto;
