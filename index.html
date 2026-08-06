@@ -969,6 +969,7 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
         <div class="rp-locked" id="rp-lockmsg" style="display:none"></div>
         <div id="rp-setup">
           <button class="main" type="button" id="rp-start" style="margin-top:0">🎭 Start a role-play</button>
+          <p class="up-hint" id="rp-limit-note" style="margin:10px 0 0;display:none">🎭 Role-play is your daily speaking practice: <b>2 sessions</b> and up to <b>2 hours</b> per day. It's just for the English exercise — keep it kind and on-topic. Games and the Practice Gym are always open!</p>
         </div>
         <div id="rp-stage" style="display:none">
           <div class="rp-scenario" id="rp-scenario"></div>
@@ -1295,6 +1296,7 @@ function configureRole(){
   const pp = $('studio-plan-pane'); if (pp) pp.style.display = 'none';
   const mp = $('studio-materials-pane'); if (mp) mp.style.display = 'none';
   const sh2 = document.querySelector('#screen-studio h2'); if (sh2) sh2.textContent = 'Role-play Arcade';
+  const rln = $('rp-limit-note'); if (rln) rln.style.display = '';
   const intro = document.querySelector('#screen-studio > p.lede'); if (intro) intro.style.display = 'none';
   const h1 = document.querySelector('.topbar h1'); if (h1) h1.textContent = 'LevelUp English';
   const lede = document.querySelector('.topbar .lede');
@@ -2546,9 +2548,21 @@ async function startRoleplay(){
     $('rp-coach').style.display = 'none';
     addMsg('them', out.reply, rp.character);
     rp.transcript.push({ who: rp.character, text: out.reply });
+    // Show the student their remaining daily role-play allowance.
+    if (IS_STUDENT && typeof out.sessionsLeft === 'number'){
+      const n = $('rp-note'); n.className = 'tool-note';
+      n.textContent = '⏳ Today: ' + out.sessionsLeft + ' role-play session' + (out.sessionsLeft===1?'':'s') +
+                      ' and about ' + out.minutesLeft + ' min left.';
+    }
   } catch(err){
     loading(false);
-    const n = $('rp-note'); n.className = 'tool-note err'; n.textContent = 'Could not start: ' + err.message;
+    const n = $('rp-note');
+    // A daily-limit message is informational, not an error.
+    if (/role-play session|minutes of role-play|resets tomorrow/i.test(err.message)){
+      n.className = 'tool-note'; n.textContent = '⛳ ' + err.message;
+    } else {
+      n.className = 'tool-note err'; n.textContent = 'Could not start: ' + err.message;
+    }
   }
   rp.busy = false;
 }
@@ -2578,7 +2592,7 @@ async function sendRoleplay(){
       rp.busy = false;
       return;
     }
-    if (out.flagged === 'blocked' && myBubble){
+    if ((out.flagged === 'blocked' || out.flagged === 'profanity' || out.flagged === 'offtopic') && myBubble){
       myBubble.innerHTML = '<span class="who">' + esc(IS_STUDENT ? 'You' : 'Student') + '</span><i>(message removed by the safety filter)</i>';
     } else {
       rp.transcript.push({ who: IS_STUDENT ? 'You' : 'Student', text: text });
@@ -3894,14 +3908,11 @@ async function refreshRoster(){
       '<tr class="'+(s.active?'':'off')+'"><td>'+esc(s.name)+'</td>'+
       '<td><span class="code-chip" data-code="'+esc(s.code)+'" title="Click to copy">'+esc(s.code)+'</span></td>'+
       '<td>'+(s.lastLogin ? new Date(s.lastLogin).toLocaleDateString() : '<span style="color:var(--ink-faint)">never</span>')+'</td>'+
-      '<td>'+(s.roleplayAccess===false
-        ? '<button class="ghost mini" data-act="toggle-rp" data-code="'+esc(s.code)+'" style="border-color:var(--danger);color:var(--danger)">🔒 RP off</button>'
-        : '<button class="ghost mini" data-act="toggle-rp" data-code="'+esc(s.code)+'">🎭 RP on</button>')+'</td>'+
       '<td><button class="ghost mini" data-act="toggle" data-code="'+esc(s.code)+'">'+(s.active?'Disable':'Enable')+'</button> '+
       '<button class="ghost mini" data-act="regen" data-code="'+esc(s.code)+'">↻ New code</button></td></tr>'
     )).join('');
     $('roster-list').innerHTML = rows
-      ? '<table class="roster-table"><thead><tr><th>Student</th><th>Access code</th><th>Last sign-in</th><th>Role-play access</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'
+      ? '<table class="roster-table"><thead><tr><th>Student</th><th>Access code</th><th>Last sign-in</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'
       : '<p class="up-hint" style="margin:8px 0 0">No students yet — add names above or import from past assessments.</p>';
     $('roster-list').querySelectorAll('.code-chip').forEach(ch => ch.addEventListener('click', () => {
       navigator.clipboard.writeText(ch.dataset.code).then(() => { const t = ch.textContent; ch.textContent = '✓ copied'; setTimeout(()=>ch.textContent=t, 1000); }).catch(()=>{});
@@ -3914,12 +3925,10 @@ async function refreshRoster(){
         const cur = (CLS.students||[]).find(s => s.code === code) || {};
         let payload;
         if (act === 'regen') payload = { action:'roster_set', code:code, regen:true };
-        else if (act === 'toggle-rp') payload = { action:'roster_set', code:code, roleplayAccess: (cur.roleplayAccess === false) };
         else payload = { action:'roster_set', code:code, active: !cur.active };
         const out = await api(payload);
         loading(false);
         if (act === 'regen') classNote('roster','ok','✓ New code for ' + out.name + ': ' + out.code);
-        if (act === 'toggle-rp') classNote('roster','ok','✓ Role-play ' + ((cur.roleplayAccess === false) ? 'enabled' : 'disabled') + ' for ' + (cur.name || 'this student') + '.');
         refreshRoster();
       } catch(err){ loading(false); classNote('roster','err', err.message); }
     }));
@@ -5976,24 +5985,13 @@ function gRuleHint(round, pack){
 let RP_ALLOWED = true;
 
 function applyRoleplayAccess(allowed){
-  RP_ALLOWED = (allowed !== false);
+  // Per-student role-play locking has been removed. Access to the arcade is now
+  // governed only by the daily quota enforced on the server (2 sessions / 2 h).
+  RP_ALLOWED = true;
   const setup = $('rp-setup');
-  const stage = $('rp-stage');
   const lock  = $('rp-lockmsg');
-  if (!setup) return;
-  if (RP_ALLOWED){
-    setup.style.display = '';
-    if (lock) lock.style.display = 'none';
-    return;
-  }
-  setup.style.display = 'none';
-  if (stage) stage.style.display = 'none';
-  if (lock){
-    lock.style.display = 'block';
-    lock.innerHTML = '🔒 <b>Role-play is paused.</b> Your teacher has temporarily turned off the ' +
-      'Role-play arcade for your account. Everything else — your report, study cards, games, the ' +
-      'Practice Gym and the CEFR LevelUp Test — is still open.';
-  }
+  if (setup) setup.style.display = '';
+  if (lock) lock.style.display = 'none';
 }
 
 /* =================================================================
