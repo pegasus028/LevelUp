@@ -1419,12 +1419,25 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyksZz4q-t6-bTzASjgqGkW
 const ROLE = "teacher";
 const IS_STUDENT = (ROLE === "student");
 
+/* Session length. The backend issues a token good for CFG.TOKEN_TTL_HOURS (720 -
+ * thirty days); this only decides when the console stops trusting its stored copy.
+ * It used to be 11.5 hours, which quietly signed you out long before the token
+ * itself expired. The server stays authoritative either way: if a token really has
+ * died, the next call returns auth:false and authLost() takes over. */
+const SESSION_HOURS = 720;
+const SESSION_MS = SESSION_HOURS * 3600 * 1000;
+
 /* ---------------- auth state (signed session token from the backend) ---------------- */
 const AUTH_KEY = 'lue_auth_v1_' + ROLE;
 let AUTH = { token:'', role:'', name:'', exp:0 };
 try {
   const saved = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
-  if (saved && saved.token && saved.exp > Date.now()) AUTH = saved;
+  // An older build stored a 11.5-hour expiry. Treat any stored token as good for
+  // the current session length so upgrading does not sign you out.
+  if (saved && saved.token){
+    if (!saved.exp || saved.exp > Date.now()) AUTH = saved;
+    else if (saved.exp > Date.now() - SESSION_MS){ saved.exp = Date.now() + SESSION_MS; AUTH = saved; }
+  }
 } catch(e){}
 function saveAuth(){ try { localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); } catch(e){} }
 function clearAuth(){ AUTH = { token:'', role:'', name:'', exp:0 }; try { localStorage.removeItem(AUTH_KEY); } catch(e){} }
@@ -1554,6 +1567,7 @@ function showScreen(name){
   if (name === 'journey' && typeof renderJourney === 'function') renderJourney();
   if (name === 'class' && !IS_STUDENT && typeof refreshUnitScores === 'function' && !CLS.utLoaded){ CLS.utLoaded = true; refreshUnitScores(); }
   if (name === 'batch' && !IS_STUDENT && typeof initBatchTab === 'function') initBatchTab();
+  if (name !== 'batch' && typeof bxPollStop === 'function') bxPollStop();
   if (name === 'myresults' && IS_STUDENT && typeof renderMyResults === 'function') renderMyResults();
 }
 function unlockTabs(){ tabs.forEach(t => { const s = t.dataset.screen; if (s==='login' || s==='class' || s==='batch' || s==='myresults') return; if (IS_STUDENT && s==='assess') return; if (!IS_STUDENT && (s==='practice' || s==='journey')) return; t.disabled = false; }); }
@@ -1575,7 +1589,8 @@ function configureRole(){
     $('login-id').type = 'password';
     $('login-id').placeholder = 'Your TEACHER_KEY passphrase';
     $('login-btn').textContent = 'Unlock console';
-    $('login-hint').textContent = 'The key is the TEACHER_KEY script property you set in Apps Script. Sessions last 12 hours.';
+    $('login-hint').textContent = 'The key is the TEACHER_KEY script property you set in Apps Script. ' +
+      'You stay signed in for ' + Math.round(SESSION_HOURS / 24) + ' days.';
     $('tab-class').style.display = '';
     $('tab-batch').style.display = '';
     $('tab-unittest').innerHTML = '📝 CEFR LevelUp Test';
@@ -1644,7 +1659,7 @@ async function doLoginClick(){
                                : { action:'login', role:'teacher', key:val };
     const out = await api(payload);
     loading(false);
-    AUTH = { token:out.token, role:out.role, name:out.name || '', exp:Date.now() + 11.5*3600*1000 };
+    AUTH = { token:out.token, role:out.role, name:out.name || '', exp:Date.now() + SESSION_MS };
     saveAuth(); updateWhoChip();
     $('login-id').value = '';
     applyLoginResult(out);
@@ -6943,7 +6958,8 @@ async function refreshUnitScores(){
  * approaches the six-minute ceiling, progress is honest, and a dropped
  * connection resumes instead of starting again.
  * ================================================================= */
-const BX = { batch:null, manifest:[], report:null, stop:false, busy:false, checkIdx:0, anchors:[] };
+const BX = { batch:null, manifest:[], report:null, stop:false, busy:false,
+             checkIdx:0, anchors:[], poll:null, hlTimer:null, checkSpelling:[], inTab:'' };
 
 function bxNote(id, cls, text){
   const n = $(id); if (!n) return;
@@ -6964,7 +6980,8 @@ function bxLog(line){
  * the rest - so "still working" and "stopped" never look the same.
  * ------------------------------------------------------------- */
 const RUN = { phase:'idle', label:'Ready', done:0, failed:0, total:0,
-              current:'', detail:'', startedAt:0, itemAt:0, times:[], timer:null };
+              current:'', detail:'', startedAt:0, itemAt:0, times:[], timer:null,
+              serverHtml:'' };
 
 const RUN_PHASES = {
   idle:       { cls:'',     label:'Ready' },
@@ -7035,6 +7052,8 @@ function bxStatus(){
     now.innerHTML = 'Working on <span class="who">' + esc(RUN.current) + '</span>' +
       (RUN.detail ? ' &mdash; ' + esc(RUN.detail) : '') +
       ' <span class="el">(' + bxClock(Date.now() - RUN.itemAt) + ' on this one)</span>';
+  } else if (RUN.serverHtml){
+    now.innerHTML = RUN.serverHtml;
   } else if (ph.cls === 'run'){
     now.innerHTML = esc(RUN.detail || 'Waiting for the server\u2026');
   } else if (RUN.phase === 'done'){
@@ -7045,7 +7064,11 @@ function bxStatus(){
   } else if (RUN.phase === 'error'){
     now.innerHTML = esc(RUN.detail || 'Something went wrong. The log below has the detail.');
   } else {
-    now.innerHTML = 'Nothing running yet. Start with <b>1 &middot; Scan folder</b>.';
+    now.innerHTML = 'Nothing running yet. Press <b>Run everything</b>, or work through the steps.';
+  }
+  if (BX.inTab && ph.cls === 'run'){
+    now.innerHTML = '<b style="color:var(--warn)">Running in this tab — keep it open.</b> ' +
+      'The server could not take the job (' + esc(BX.inTab) + ')<br>' + now.innerHTML;
   }
   bxSteps(); bxChips();
 }
@@ -7116,7 +7139,19 @@ function initBatchTab(){
   $('bx-ocr-btn').addEventListener('click', () => bxRun('ingest'));
   $('bx-mark-btn').addEventListener('click', () => bxRun('grade'));
   $('bx-final-btn').addEventListener('click', bxFinalise);
-  $('bx-stop-btn').addEventListener('click', () => { BX.stop = true; bxLog('Stopping after this script…'); });
+  $('bx-stop-btn').addEventListener('click', async () => {
+    BX.stop = true;
+    bxLog('Stopping after the script in flight…');
+    if (BX.batch){
+      try {
+        await api({ action:'batch_autorun', batchId: BX.batch.batchId, on:false });
+        bxPollStop();
+        bxPhase('stopped');
+        bxNote('bx-run-note','warn','Stopped. Press Run everything to carry on — ' +
+          'it picks up exactly where it left off.');
+      } catch(e){}
+    }
+  });
   $('bx-check-pick').addEventListener('change', e => { BX.checkIdx = Number(e.target.value) || 0; bxShowCheck(); });
   $('bx-check-prev').addEventListener('click', () => { BX.checkIdx = Math.max(0, BX.checkIdx - 1); bxShowCheck(); });
   $('bx-check-next').addEventListener('click', () => { BX.checkIdx = Math.min(BX.manifest.length - 1, BX.checkIdx + 1); bxShowCheck(); });
@@ -7180,6 +7215,10 @@ async function bxList(){
 }
 
 async function bxOpen(batchId){
+  // Opening the SAME batch happens at the end of every run, to refresh the
+  // report. Clearing the log there threw away the record of what just
+  // happened - including which scripts failed and why.
+  const sameBatch = !!(BX.batch && BX.batch.batchId === batchId);
   try {
     loading(true, 'Opening the batch…');
     const out = await api({ action:'batch_report', batchId });
@@ -7197,7 +7236,7 @@ async function bxOpen(batchId){
       BX.batch.minWords + ' words · <a href="' + esc(BX.batch.folderUrl) +
       '" target="_blank" rel="noopener">source folder</a>' +
       (BX.batch.calibrationNote ? ' · ' + esc(BX.batch.calibrationNote) : '') + '</p>';
-    $('bx-log').textContent = 'Batch “' + BX.batch.label + '” opened.';
+    if (!sameBatch) $('bx-log').textContent = 'Batch “' + BX.batch.label + '” opened.';
     // Rebuild the status from what the server actually holds, so the panel is
     // right after a page reload or a session that was interrupted.
     const marked = BX.manifest.filter(m => m.status === 'graded').length;
@@ -7209,6 +7248,12 @@ async function bxOpen(batchId){
           : (marked ? marked + ' of ' + BX.manifest.length + ' marked. Carry on from the step you left.' : '') });
     bxRenderManifest();
     bxSec('run');
+    // If a background run is already going, reattach to it rather than
+    // showing a stale snapshot.
+    try {
+      const st = await api({ action:'batch_status', batchId: BX.batch.batchId });
+      if (st.running) bxPollStart();
+    } catch(e){}
   } catch(err){ loading(false); bxNote('bx-new-note','err', err.message); }
 }
 
@@ -7352,10 +7397,121 @@ async function bxRun(kind, chained){
  * failed. Calibration is advisory here: if the markers drift it is
  * recorded and flagged rather than silently halting an hour's run.
  * ------------------------------------------------------------- */
+/* ---------------------------------------------------------------
+ * Preferred path: hand the whole run to the server and watch it.
+ * A one-minute trigger works through the batch there, so closing the
+ * tab, shutting the laptop or losing wifi no longer kills the run -
+ * and because every step is driven off each script's stored status,
+ * an interruption resumes rather than restarting.
+ * ------------------------------------------------------------- */
 async function bxRunAll(){
   if (!BX.batch || BX.busy) return;
   const btn = $('bx-runall-btn');
   btn.disabled = true;
+  BX.stop = false;
+  bxNote('bx-run-note','', '');
+
+  try {
+    bxPhase('scanning', { reset:true, detail:'Reading the folder and handing the run to the server…' });
+    const out = await api({ action:'batch_autorun', batchId: BX.batch.batchId, on:true });
+    bxLog('Run handed to the server: ' + out.items + ' script(s).' +
+      (out.unassigned ? '  ⚠ ' + out.unassigned + ' unassigned and will be skipped.' : '') +
+      ((out.missing || []).length ? '  ⚠ missing from the folder: ' + out.missing.join(', ') : ''));
+    await bxScanRefresh();
+    bxPollStart();
+    btn.disabled = false;
+    return;
+  } catch(err){
+    // No trigger permission, or the server refused. Fall back to running it
+    // here in the tab so the class still gets marked.
+    bxLog('Background run unavailable (' + err.message + '). Running in this tab instead — keep it open.');
+    BX.inTab = err.message;
+  }
+  await bxRunAllInTab();
+  btn.disabled = false;
+}
+
+/** Refresh the manifest without re-running a scan on the server. */
+async function bxScanRefresh(){
+  try {
+    const out = await api({ action:'batch_report', batchId: BX.batch.batchId });
+    BX.report = out;
+    BX.manifest = (out.pending || []).concat((out.rows || []).map(r => ({
+      itemId:r.itemId, student:r.student, status:'graded', pages:r.pages, flags:r.flags })));
+    bxRenderManifest();
+  } catch(e){}
+}
+
+/* ---- polling the background run ---- */
+function bxPollStart(){
+  bxPollStop();
+  BX.poll = setInterval(bxPollOnce, 8000);
+  bxPollOnce();
+}
+function bxPollStop(){ if (BX.poll){ clearInterval(BX.poll); BX.poll = null; } RUN.serverHtml = ''; }
+
+async function bxPollOnce(){
+  if (!BX.batch) return bxPollStop();
+  let s;
+  try { s = await api({ action:'batch_status', batchId: BX.batch.batchId }); }
+  catch(err){
+    // A dropped connection must not look like a dead run - the server is
+    // still working whether or not this tab can reach it.
+    RUN.serverHtml = 'Lost contact with the server — the run carries on there. Retrying…';
+    bxStatus();
+    return;
+  }
+
+  // Defend against a partial response: a status poll that comes back missing
+  // fields must not paint "undefined/undefined" over a run that is fine.
+  const n = (v) => (typeof v === 'number' && isFinite(v)) ? v : 0;
+  s = s || {};
+  s.total = n(s.total); s.read = n(s.read); s.marked = n(s.marked); s.stuck = n(s.stuck);
+  if (typeof s.lastTickSecondsAgo !== 'number') s.lastTickSecondsAgo = null;
+
+  RUN.total = s.total * 2;                       // each script is read, then marked
+  RUN.done = s.read + s.marked;
+  RUN.failed = s.stuck;
+
+  const phaseMap = { queued:'scanning', calibrating:'calibrating', transcribing:'transcribing',
+                     marking:'marking', finalising:'finalising', done:'done',
+                     stopped:'stopped', error:'error' };
+  const phase = phaseMap[s.phase] || (s.running ? 'transcribing' : 'idle');
+  if (RUN.phase !== phase) bxPhase(phase);
+
+  const stale = (s.lastTickSecondsAgo !== null && s.lastTickSecondsAgo > 180 && s.running);
+  RUN.serverHtml =
+    (s.running
+      ? '<b>Running on the server.</b> You can close this tab — it will carry on without you. '
+      : '') +
+    esc(s.note || '') +
+    ' <span class="el">' + s.read + '/' + s.total + ' read · ' + s.marked + '/' + s.total + ' marked' +
+    (s.stuck ? ' · ' + s.stuck + ' stuck' : '') +
+    (s.lastTickSecondsAgo !== null ? ' · last activity ' + bxClock(s.lastTickSecondsAgo * 1000) + ' ago' : '') +
+    '</span>' +
+    (stale ? '<br><b style="color:var(--warn)">No activity for a few minutes — the trigger may have been ' +
+             'removed. Press Run everything again to restart it; nothing already done will be repeated.</b>' : '');
+  bxStatus();
+
+  if (!s.running){
+    RUN.serverHtml = '';
+    bxPollStop();
+    $('bx-stop-btn').style.display = 'none';
+    if (s.finalised){
+      await bxOpen(BX.batch.batchId);
+      const need = ((BX.report || {}).flagged || []).length;
+      bxNote('bx-run-note', need ? 'warn' : 'ok',
+        'Finished. ' + (need ? need + ' script(s) need your eyes.' : 'Nothing needs your review.'));
+      bxSec('report');
+    }
+  } else {
+    $('bx-stop-btn').style.display = '';
+  }
+}
+
+/* ---- fallback: the original in-tab loop ---- */
+async function bxRunAllInTab(){
+  if (!BX.batch) return;
   BX.stop = false;
   $('bx-stop-btn').style.display = '';
   const t0 = Date.now();
@@ -7418,7 +7574,6 @@ async function bxRunAll(){
       bxNote('bx-run-note','err', err.message);
     }
   } finally {
-    btn.disabled = false;
     BX.busy = false;
     $('bx-stop-btn').style.display = 'none';
   }
