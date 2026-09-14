@@ -729,6 +729,72 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
 .sr-note{margin:18px 0 0;padding:15px 17px;border-left:3px solid var(--gold);background:#fffdf7;border-radius:0 10px 10px 0;
   font-family:"Newsreader",Georgia,serif;font-size:1.03rem;line-height:1.68;color:var(--ink);}
 .sr-spark{margin:6px 0 18px;}
+
+/* ---- batch run status panel ---- */
+.bxs{border:1px solid var(--line-strong);border-radius:12px;background:#fffdf7;padding:16px 18px;margin:14px 0 0;}
+.bxs-top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
+.bxs-phase{display:flex;align-items:center;gap:10px;font-family:"Fraunces",serif;font-size:1.22rem;font-weight:600;color:var(--ink);}
+.bxs-dot{width:11px;height:11px;border-radius:50%;background:var(--ink-faint);flex:0 0 auto;}
+.bxs.run .bxs-dot{background:var(--gold);animation:bxpulse 1.1s ease-in-out infinite;}
+.bxs.done .bxs-dot{background:var(--good);}
+.bxs.stop .bxs-dot{background:var(--warn);}
+.bxs.err .bxs-dot{background:var(--danger);}
+.bxs.run{border-color:var(--gold-soft);}
+.bxs.done{border-color:var(--good);}
+.bxs.err{border-color:var(--danger);}
+@keyframes bxpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.78)}}
+@media (prefers-reduced-motion:reduce){.bxs.run .bxs-dot{animation:none}}
+.bxs-counts{display:flex;gap:16px;flex-wrap:wrap;font-size:.84rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+.bxs-counts b{color:var(--ink);font-size:1rem;}
+.bxs-counts .ok b{color:var(--good);}
+.bxs-counts .bad b{color:var(--danger);}
+.bxs-bar{height:12px;background:var(--gold-wash);border:1px solid var(--line);border-radius:7px;overflow:hidden;margin:13px 0 10px;}
+.bxs-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold-soft),var(--gold));transition:width .3s;}
+.bxs-now{font-size:.92rem;color:var(--ink);min-height:1.5em;}
+.bxs-now .who{font-weight:700;}
+.bxs-now .el{color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+.bxs-steps{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 0;padding-top:13px;border-top:1px solid var(--line);}
+.bxs-step{display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;color:var(--ink-faint);
+  background:var(--card);border:1px solid var(--line);border-radius:8px;padding:5px 11px;}
+.bxs-step.on{color:var(--gold);border-color:var(--gold-soft);background:var(--gold-wash);}
+.bxs-step.fin{color:var(--good);border-color:var(--good);background:var(--good-wash);}
+.bxs-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:13px;}
+.bxs-chip{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;border-radius:7px;
+  padding:3px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);}
+.bxs-chip i{width:7px;height:7px;border-radius:50%;background:var(--line-strong);display:inline-block;}
+.bxs-chip.read i{background:var(--gold-soft);}
+.bxs-chip.marked i{background:var(--good);}
+.bxs-chip.now{border-color:var(--gold);background:var(--gold-wash);color:var(--gold);}
+.bxs-chip.now i{background:var(--gold);animation:bxpulse 1.1s ease-in-out infinite;}
+.bxs-chip.fail{border-color:var(--danger);background:var(--danger-wash);color:var(--danger);}
+.bxs-chip.fail i{background:var(--danger);}
+.bx-banner{border-left:3px solid var(--gold);background:var(--gold-wash);border-radius:0 10px 10px 0;
+  padding:14px 17px;margin:0 0 16px;font-size:.94rem;color:var(--ink);}
+.bx-banner b{color:var(--accent);}
+tr.bx-click{cursor:pointer;}
+tr.bx-click:hover{background:var(--accent-wash);}
+/* ---- student detail drawer ---- */
+.bxd{position:fixed;inset:0;background:rgba(33,28,20,.5);z-index:90;display:flex;justify-content:flex-end;}
+.bxd.hidden{display:none;}
+.bxd-panel{background:var(--card);width:min(720px,100%);height:100%;overflow:auto;padding:26px clamp(18px,3vw,34px) 60px;
+  box-shadow:-8px 0 40px rgba(70,55,20,.2);}
+.bxd-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  padding-bottom:16px;border-bottom:2px solid var(--line);margin-bottom:18px;}
+.bxd-band{font-family:"Fraunces",serif;font-size:2.3rem;font-weight:700;line-height:1;color:var(--accent);text-align:right;}
+.bxd-band small{display:block;font-family:"Inter",sans-serif;font-size:.66rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-faint);margin-top:5px;}
+.bxd-crit{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 10px;background:#fffdf7;}
+.bxd-crit h4{margin:0 0 6px;font-size:.95rem;display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
+.bxd-crit h4 span{font-family:"Fraunces",serif;font-size:1.1rem;color:var(--accent);}
+.bxd-crit .desc{font-size:.84rem;color:var(--ink-soft);font-style:italic;margin-bottom:7px;}
+.bxd-crit .ev{font-size:.85rem;color:var(--ink);border-left:2px solid var(--gold-soft);padding-left:10px;margin:4px 0;}
+.bxd-crit .lever{font-size:.85rem;color:var(--good);margin-top:7px;}
+.bxd-comment{font-family:"Newsreader",Georgia,serif;font-size:1.05rem;line-height:1.7;color:var(--ink);
+  background:#fffdf7;border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:16px 18px;}
+.bxd-tx{white-space:pre-wrap;font-family:"Newsreader",Georgia,serif;font-size:.98rem;line-height:1.7;
+  background:#fffdf7;border:1px solid var(--line);border-radius:10px;padding:15px 17px;max-height:340px;overflow:auto;}
+.bxd-x{background:none;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;cursor:pointer;
+  font-size:1.1rem;color:var(--ink-soft);flex:0 0 auto;}
 </style>
 </head>
 <body>
@@ -1155,8 +1221,18 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
             <button class="ghost" type="button" id="bx-final-btn">5 · Finalise &amp; publish</button>
             <button class="ghost" type="button" id="bx-stop-btn" style="display:none">✖ Stop</button>
           </div>
-          <div class="bx-prog"><span id="bx-prog-fill"></span></div>
-          <div class="bx-log" id="bx-log">Ready.</div>
+          <div class="bxs" id="bx-status">
+            <div class="bxs-top">
+              <div class="bxs-phase"><span class="bxs-dot"></span><span id="bxs-phase">Ready</span></div>
+              <div class="bxs-counts" id="bxs-counts"></div>
+            </div>
+            <div class="bxs-bar"><span id="bx-prog-fill"></span></div>
+            <div class="bxs-now" id="bxs-now">Nothing running yet. Start with <b>1 &middot; Scan folder</b>.</div>
+            <div class="bxs-steps" id="bxs-steps"></div>
+            <div class="bxs-chips" id="bxs-chips"></div>
+          </div>
+          <details style="margin-top:12px"><summary style="cursor:pointer;font-size:.86rem;color:var(--ink-soft)">Activity log</summary>
+            <div class="bx-log" id="bx-log" style="margin-top:8px">Ready.</div></details>
           <div class="tool-note" id="bx-run-note"></div>
           <div id="bx-manifest" style="margin-top:16px"></div>
         </div>
@@ -1211,6 +1287,11 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
         </div>
       </div>
     </section>
+
+    <!-- student detail drawer (teacher console) -->
+    <div class="bxd hidden" id="bx-drawer">
+      <div class="bxd-panel" id="bx-drawer-body"></div>
+    </div>
 
     <!-- ============ MY RESULTS (student console only) ============ -->
     <section class="screen" id="screen-myresults">
@@ -6831,9 +6912,128 @@ function bxLog(line){
   box.textContent += '\n' + line;
   box.scrollTop = box.scrollHeight;
 }
-function bxProg(done, total){
-  const f = $('bx-prog-fill'); if (!f) return;
-  f.style.width = total ? Math.round(done / total * 100) + '%' : '0%';
+/* ---------------------------------------------------------------
+ * RUN STATUS. Each script is a separate request that can take up to
+ * ninety seconds, so silence is normal and looks identical to a crash.
+ * The panel therefore always shows a phase, a live count, whose script
+ * is in flight, how long that one has been going, and an estimate for
+ * the rest - so "still working" and "stopped" never look the same.
+ * ------------------------------------------------------------- */
+const RUN = { phase:'idle', label:'Ready', done:0, failed:0, total:0,
+              current:'', detail:'', startedAt:0, itemAt:0, times:[], timer:null };
+
+const RUN_PHASES = {
+  idle:       { cls:'',     label:'Ready' },
+  scanning:   { cls:'run',  label:'Reading the folder' },
+  calibrating:{ cls:'run',  label:'Calibrating markers' },
+  transcribing:{cls:'run',  label:'Transcribing' },
+  marking:    { cls:'run',  label:'Double-marking' },
+  finalising: { cls:'run',  label:'Ranking and writing comments' },
+  done:       { cls:'done', label:'Finished' },
+  stopped:    { cls:'stop', label:'Stopped by you' },
+  error:      { cls:'err',  label:'Stopped on an error' }
+};
+
+function bxClock(ms){
+  const s = Math.max(0, Math.round(ms / 1000));
+  const m = Math.floor(s / 60);
+  return m ? (m + 'm ' + String(s % 60).padStart(2,'0') + 's') : (s + 's');
+}
+function bxPhase(phase, opts){
+  opts = opts || {};
+  RUN.phase = phase;
+  if (opts.total !== undefined){ RUN.total = opts.total; RUN.done = 0; RUN.failed = 0; RUN.times = []; }
+  if (opts.reset) { RUN.startedAt = Date.now(); }
+  RUN.current = opts.current || '';
+  RUN.detail = opts.detail || '';
+  RUN.itemAt = opts.current ? Date.now() : 0;
+  const running = RUN_PHASES[phase] && RUN_PHASES[phase].cls === 'run';
+  if (running && !RUN.timer) RUN.timer = setInterval(bxStatus, 1000);
+  if (!running && RUN.timer){ clearInterval(RUN.timer); RUN.timer = null; }
+  bxStatus();
+}
+function bxItemStart(who, detail){
+  RUN.current = who; RUN.detail = detail || ''; RUN.itemAt = Date.now();
+  bxStatus();
+}
+function bxItemEnd(ok){
+  if (RUN.itemAt) RUN.times.push(Date.now() - RUN.itemAt);
+  RUN.done++; if (!ok) RUN.failed++;
+  RUN.current = ''; RUN.itemAt = 0;
+  bxStatus();
+}
+function bxStatus(){
+  const box = $('bx-status'); if (!box) return;
+  const ph = RUN_PHASES[RUN.phase] || RUN_PHASES.idle;
+  box.className = 'bxs ' + ph.cls;
+  $('bxs-phase').textContent = ph.label;
+
+  const pct = RUN.total ? Math.round(RUN.done / RUN.total * 100) : 0;
+  $('bx-prog-fill').style.width = (RUN.total ? pct : 0) + '%';
+
+  // counts
+  let counts = '';
+  if (RUN.total){
+    counts += '<span><b>' + RUN.done + '</b> of <b>' + RUN.total + '</b> scripts</span>';
+    if (RUN.done - RUN.failed > 0) counts += '<span class="ok"><b>' + (RUN.done - RUN.failed) + '</b> done</span>';
+    if (RUN.failed) counts += '<span class="bad"><b>' + RUN.failed + '</b> failed</span>';
+  }
+  if (RUN.startedAt && ph.cls === 'run') counts += '<span>elapsed <b>' + bxClock(Date.now() - RUN.startedAt) + '</b></span>';
+  if (RUN.times.length && RUN.total > RUN.done && ph.cls === 'run'){
+    const avg = RUN.times.reduce((a,b)=>a+b,0) / RUN.times.length;
+    counts += '<span>about <b>' + bxClock(avg * (RUN.total - RUN.done)) + '</b> left</span>';
+  }
+  $('bxs-counts').innerHTML = counts;
+
+  // what is happening right now
+  const now = $('bxs-now');
+  if (RUN.current){
+    now.innerHTML = 'Working on <span class="who">' + esc(RUN.current) + '</span>' +
+      (RUN.detail ? ' &mdash; ' + esc(RUN.detail) : '') +
+      ' <span class="el">(' + bxClock(Date.now() - RUN.itemAt) + ' on this one)</span>';
+  } else if (ph.cls === 'run'){
+    now.innerHTML = esc(RUN.detail || 'Waiting for the server\u2026');
+  } else if (RUN.phase === 'done'){
+    now.innerHTML = 'Finished in ' + bxClock(Date.now() - RUN.startedAt) +
+      (RUN.failed ? '. <b>' + RUN.failed + ' script(s) failed</b> \u2014 press the same button again to retry just those.' : '.');
+  } else if (RUN.phase === 'stopped'){
+    now.innerHTML = 'Stopped at ' + RUN.done + ' of ' + RUN.total + '. Press the same button to carry on from here.';
+  } else if (RUN.phase === 'error'){
+    now.innerHTML = esc(RUN.detail || 'Something went wrong. The log below has the detail.');
+  } else {
+    now.innerHTML = 'Nothing running yet. Start with <b>1 &middot; Scan folder</b>.';
+  }
+  bxSteps(); bxChips();
+}
+function bxSteps(){
+  const box = $('bxs-steps'); if (!box) return;
+  const m = BX.manifest || [];
+  const read = m.filter(x => x.status === 'transcribed' || x.status === 'approved' || x.status === 'graded').length;
+  const marked = m.filter(x => x.status === 'graded').length;
+  const steps = [
+    { n:'1 Scan',       done: m.length > 0,                     on: RUN.phase === 'scanning' },
+    { n:'2 Calibrate',  done: !!(BX.batch && BX.batch.calibrationNote), on: RUN.phase === 'calibrating' },
+    { n:'3 Transcribe', done: m.length > 0 && read >= m.length, on: RUN.phase === 'transcribing' },
+    { n:'4 Mark',       done: m.length > 0 && marked >= m.length, on: RUN.phase === 'marking' },
+    { n:'5 Publish',    done: !!(BX.batch && BX.batch.status === 'finalised'), on: RUN.phase === 'finalising' }
+  ];
+  box.innerHTML = steps.map(s =>
+    '<span class="bxs-step ' + (s.on ? 'on' : s.done ? 'fin' : '') + '">' +
+    (s.on ? '\u25cf' : s.done ? '\u2713' : '\u25cb') + ' ' + s.n + '</span>').join('');
+}
+function bxChips(){
+  const box = $('bxs-chips'); if (!box) return;
+  const m = BX.manifest || [];
+  if (!m.length){ box.innerHTML = ''; return; }
+  box.innerHTML = m.map(x => {
+    const who = x.student || '(unassigned)';
+    let cls = '';
+    if (RUN.current && who === RUN.current) cls = 'now';
+    else if (x.failed) cls = 'fail';
+    else if (x.status === 'graded') cls = 'marked';
+    else if (x.status === 'transcribed' || x.status === 'approved') cls = 'read';
+    return '<span class="bxs-chip ' + cls + '"><i></i>' + esc(who) + '</span>';
+  }).join('');
 }
 function bxSec(name){
   document.querySelectorAll('#bx-nav button').forEach(b => b.classList.toggle('on', b.dataset.sec === name));
@@ -6870,6 +7070,12 @@ function initBatchTab(){
   $('bx-check-next').addEventListener('click', () => { BX.checkIdx = Math.min(BX.manifest.length - 1, BX.checkIdx + 1); bxShowCheck(); });
   $('bx-check-save').addEventListener('click', bxSaveTranscript);
   $('bx-anchor-add').addEventListener('click', bxAnchorAdd);
+  $('bx-drawer').addEventListener('click', e => {
+    if (e.target.id === 'bx-drawer') e.target.classList.add('hidden');
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') $('bx-drawer').classList.add('hidden');
+  });
   bxList();
 }
 
@@ -6939,7 +7145,15 @@ async function bxOpen(batchId){
       '" target="_blank" rel="noopener">source folder</a>' +
       (BX.batch.calibrationNote ? ' · ' + esc(BX.batch.calibrationNote) : '') + '</p>';
     $('bx-log').textContent = 'Batch “' + BX.batch.label + '” opened.';
-    bxProg(0,0);
+    // Rebuild the status from what the server actually holds, so the panel is
+    // right after a page reload or a session that was interrupted.
+    const marked = BX.manifest.filter(m => m.status === 'graded').length;
+    RUN.total = BX.manifest.length; RUN.done = marked; RUN.failed = 0; RUN.times = [];
+    RUN.startedAt = 0;
+    bxPhase(BX.batch.status === 'finalised' ? 'done' : 'idle',
+      { detail: BX.batch.status === 'finalised'
+          ? 'This batch is published. Students can see their results.'
+          : (marked ? marked + ' of ' + BX.manifest.length + ' marked. Carry on from the step you left.' : '') });
     bxRenderManifest();
     bxSec('run');
   } catch(err){ loading(false); bxNote('bx-new-note','err', err.message); }
@@ -6949,6 +7163,7 @@ async function bxOpen(batchId){
 async function bxScan(){
   if (!BX.batch) return;
   try {
+    bxPhase('scanning', { reset:true, detail:'Pairing multi-page scripts and checking them against the roster.' });
     loading(true, 'Reading the folder…', 'Pairing multi-page scripts and checking them against the roster.');
     const out = await api({ action:'batch_scan', batchId: BX.batch.batchId });
     loading(false);
@@ -6962,7 +7177,9 @@ async function bxScan(){
     bxNote('bx-run-note','ok','✓ ' + BX.manifest.length + ' script(s) found.' +
       ((out.missing||[]).length ? ' ' + out.missing.length + ' student(s) missing.' : ''));
     bxRenderManifest();
-  } catch(err){ loading(false); bxNote('bx-run-note','err', err.message); }
+    bxPhase('done', { total: BX.manifest.length });
+    RUN.done = BX.manifest.length; bxStatus();
+  } catch(err){ loading(false); bxPhase('error', { detail: err.message }); bxNote('bx-run-note','err', err.message); }
 }
 
 function bxRenderManifest(){
@@ -7002,14 +7219,17 @@ function bxRenderManifest(){
 async function bxCalibrate(){
   if (!BX.batch) return;
   try {
+    bxPhase('calibrating', { reset:true, detail:'Marking scripts whose band is already known.' });
     loading(true, 'Testing the markers on known scripts…', 'Nothing is marked until they land within half a band.');
     const out = await api({ action:'batch_calibrate', batchId: BX.batch.batchId });
     loading(false);
     (out.results || []).forEach(r => bxLog('anchor “' + r.label + '”: official ' + r.official +
       ', marked ' + r.marked + ' (drift ' + (r.drift > 0 ? '+' : '') + r.drift + ')' + (r.within ? '' : '  ✖')));
     bxLog(out.note);
+    if (BX.batch) BX.batch.calibrationNote = out.note;
+    bxPhase(out.calibrated ? 'done' : 'error', { detail: out.note });
     bxNote('bx-run-note', out.calibrated ? 'ok' : 'err', out.note);
-  } catch(err){ loading(false); bxNote('bx-run-note','err', err.message); }
+  } catch(err){ loading(false); bxPhase('error', { detail: err.message }); bxNote('bx-run-note','err', err.message); }
 }
 
 /* ---- the runner ---- */
@@ -7032,10 +7252,16 @@ async function bxRun(kind){
   $('bx-stop-btn').style.display = '';
   bxNote('bx-run-note','', '');
   bxLog((kind === 'ingest' ? 'Transcribing ' : 'Double-marking ') + todo.length + ' script(s)…');
+  bxPhase(kind === 'ingest' ? 'transcribing' : 'marking', { reset:true, total: todo.length });
 
-  let done = 0, failed = 0;
+  let failed = 0;
   for (const m of todo){
-    if (BX.stop){ bxLog('Stopped by you at ' + done + ' of ' + todo.length + '.'); break; }
+    if (BX.stop){ bxLog('Stopped by you at ' + RUN.done + ' of ' + todo.length + '.'); break; }
+    m.failed = false;
+    bxItemStart(m.student, kind === 'ingest'
+      ? ('reading ' + (m.pages > 1 ? (m.pages + ' pages') : 'the script'))
+      : 'two examiner passes, then reconciling');
+    let ok = true;
     try {
       const out = await api({
         action: kind === 'ingest' ? 'batch_item_ingest' : 'batch_item_grade',
@@ -7052,23 +7278,25 @@ async function bxRun(kind){
           (out.flags && out.flags.length ? '  [' + out.flags.join(' ') + ']' : ''));
       }
     } catch(err){
-      failed++;
+      ok = false; failed++; m.failed = true;
       bxLog('✖ ' + (m.student || m.itemId) + ' — ' + err.message);
     }
-    done++;
-    bxProg(done, todo.length);
+    bxItemEnd(ok);
     bxRenderManifest();
   }
   BX.busy = false;
   $('bx-stop-btn').style.display = 'none';
+  bxPhase(BX.stop ? 'stopped' : 'done');
   bxNote('bx-run-note', failed ? 'err' : 'ok',
-    done + ' of ' + todo.length + ' done' + (failed ? ', ' + failed + ' failed — re-run to retry just those.' : '.'));
+    RUN.done + ' of ' + todo.length + ' done' + (failed ? ', ' + failed + ' failed — press the same button again to retry just those.' : '.'));
 }
 
 /* ---- finalise ---- */
 async function bxFinalise(){
   if (!BX.batch) return;
   try {
+    bxPhase('finalising', { reset:true, total: (BX.manifest||[]).filter(m => m.status === 'graded').length,
+      detail:'Ranking the class, then writing one comment per student. Each is checked for length and for quoting the script accurately before it is accepted, so this step takes a minute or two.' });
     loading(true, 'Ranking the class and writing the comments…',
       'Each comment is checked for length and for quoting the script accurately before it is accepted.');
     const out = await api({ action:'batch_finalise', batchId: BX.batch.batchId });
@@ -7076,10 +7304,13 @@ async function bxFinalise(){
     bxLog('Finalised: ' + out.graded + ' scripts, ' + out.commentsWritten + ' comments written. ' +
       'Class mean ' + out.mean + ', spread ' + out.sd + '.');
     (out.failures || []).forEach(f => bxLog('✖ comment failed for ' + f.student + ': ' + f.error));
-    bxNote('bx-run-note','ok','✓ Published. The students can see their results now.');
+    RUN.done = out.graded; RUN.failed = (out.failures || []).length;
+    bxPhase('done', { detail:'Published.' });
+    bxNote('bx-run-note','ok','✓ Published — ' + out.commentsWritten + ' comment(s) written. ' +
+      'Open the Report tab and click any student to read theirs.');
     await bxOpen(BX.batch.batchId);
     bxSec('report');
-  } catch(err){ loading(false); bxNote('bx-run-note','err', err.message); }
+  } catch(err){ loading(false); bxPhase('error', { detail: err.message }); bxNote('bx-run-note','err', err.message); }
 }
 
 /* ---- transcript check ---- */
@@ -7137,14 +7368,19 @@ async function bxReport(){
     const weakest = ['tr','cc','lr','gra'].sort((a,b) => out.dims[a] - out.dims[b])[0];
     const dimName = { tr:'Task Response', cc:'Coherence & Cohesion', lr:'Lexical Resource', gra:'Grammar' };
 
-    const rows = out.rows.map(r =>
-      '<tr><td>' + r.rank + '</td><td><b>' + esc(r.student) + '</b></td>' +
+    const rows = out.rows.map((r, i) =>
+      '<tr class="bx-click" data-row="' + esc(r.itemId) + '">' +
+      '<td>' + (r.rank || (i + 1)) + '</td><td><b>' + esc(r.student) + '</b></td>' +
       '<td><span class="bx-band">' + r.band.toFixed(1) + '</span></td>' +
       '<td>' + esc(r.cefr) + '<div class="hmeta">' + esc(r.cefrNote || '') + '</div></td>' +
       '<td style="font-variant-numeric:tabular-nums">' + r.tr + ' · ' + r.cc + ' · ' + r.lr + ' · ' + r.gra + '</td>' +
-      '<td>' + r.words + '</td><td><span class="bx-q">Q' + r.quartile + '</span></td>' +
+      '<td>' + r.words + '</td>' +
+      '<td>' + (r.quartile ? '<span class="bx-q">Q' + r.quartile + '</span>'
+                           : '<span class="up-hint">—</span>') + '</td>' +
       '<td>' + bxFlagHtml(r.flags) + '</td>' +
-      '<td class="bx-comment">' + esc(r.comment || '') + '</td></tr>').join('');
+      '<td class="bx-comment">' + (r.comment
+          ? esc(r.comment.slice(0, 120)) + (r.comment.length > 120 ? '…' : '')
+          : '<span class="up-hint">not written yet</span>') + '</td></tr>').join('');
 
     const issues = (out.topIssues || []).map(t =>
       '<div class="issue-card"><span class="cnt">×' + t.count + '</span><b>' + esc(t.issue) + '</b>' +
@@ -7152,31 +7388,142 @@ async function bxReport(){
       esc(t.example) + '</span> → <span style="color:var(--good)">' + esc(t.correction) + '</span></div></div>').join('');
 
     const flagged = out.flagged.map(r =>
-      '<tr><td><b>' + esc(r.student) + '</b></td><td>' + r.band.toFixed(1) + '</td>' +
+      '<tr class="bx-click" data-row="' + esc(r.itemId) + '"><td><b>' + esc(r.student) + '</b></td>' +
+      '<td>' + r.band.toFixed(1) + '</td>' +
       '<td>' + bxFlagHtml(r.flags) + '</td><td style="font-size:.84rem;color:var(--ink-soft)">' +
       esc(r.moderationNote || '') + '</td></tr>').join('');
+
+    const banner = out.finalised
+      ? (out.commentsWritten < out.rows.length
+          ? '<div class="bx-banner">Published, but only <b>' + out.commentsWritten + ' of ' + out.rows.length +
+            '</b> comments were written. Run <b>5 · Finalise &amp; publish</b> again to fill the gaps.</div>'
+          : '')
+      : '<div class="bx-banner">This batch is <b>marked but not published</b>. Ranking, quartiles and the ' +
+        'student comments are all written by <b>5 · Finalise &amp; publish</b> — that is why those columns are ' +
+        'empty. Students see nothing until you run it.</div>';
 
     box.innerHTML =
       '<div class="pane-title">' + esc(out.batch.label) +
       (out.batch.sheetUrl ? ' <a class="ghost mini" style="text-decoration:none" href="' +
         esc(out.batch.sheetUrl) + '" target="_blank" rel="noopener">📊 Open the Sheet</a>' : '') +
-      ' <button class="ghost mini" type="button" onclick="printScreen(\'screen-batch\')">🖨 Print</button></div>' +
+      (out.commentsWritten ? ' <button class="ghost mini" type="button" id="bx-print-comments">🖨 Print all comments</button>' : '') +
+      '</div>' + banner +
       '<div class="bx-grid" style="margin:12px 0 16px">' +
       '<div class="bx-stat"><div class="big">' + out.rows.length + '</div><div class="lbl">Scripts marked</div></div>' +
       '<div class="bx-stat"><div class="big">' + mean.toFixed(2) + '</div><div class="lbl">Class mean band</div></div>' +
       '<div class="bx-stat"><div class="big">' + esc(dimName[weakest]) + '</div><div class="lbl">Weakest criterion (' + out.dims[weakest] + ')</div></div>' +
       '<div class="bx-stat"><div class="big">' + out.flagged.length + '</div><div class="lbl">Need your eyes</div></div></div>' +
       (out.batch.calibrationNote ? '<p class="up-hint" style="margin:0 0 12px">🎯 ' + esc(out.batch.calibrationNote) + '</p>' : '') +
+      '<p class="up-hint" style="margin:0 0 10px">Click any student to read their full comment, the evidence behind each band, and their script.</p>' +
       '<div class="table-scroll" style="margin-bottom:18px"><table class="roster-table"><thead><tr>' +
       '<th>#</th><th>Student</th><th>Band</th><th>CEFR</th><th>TR · CC · LR · GRA</th><th>Words</th>' +
       '<th>Quartile</th><th>Flags</th><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-      (flagged ? '<div class="pane-title" style="font-size:1rem">Moderation queue</div>' +
-        '<div class="table-scroll" style="margin-bottom:18px"><table class="roster-table"><thead><tr><th>Student</th><th>Band</th><th>Flags</th><th>What happened</th></tr></thead><tbody>' +
-        flagged + '</tbody></table></div>' : '') +
+      (flagged ? '<div class="pane-title" style="font-size:1rem">Needs your eyes</div>' +
+        '<div class="table-scroll" style="margin-bottom:18px"><table class="roster-table"><thead><tr><th>Student</th><th>Band</th><th>Why</th><th>What happened</th></tr></thead><tbody>' +
+        flagged + '</tbody></table></div>'
+        : '<p class="up-hint" style="margin:0 0 18px">✓ Nothing needs your review — no marker disagreed by a whole band, ' +
+          'nothing landed on a band boundary, and every transcript read cleanly.</p>') +
       (issues ? '<div class="pane-title" style="font-size:1rem">Most common patterns across the class</div>' + issues : '') +
       (out.pending.length ? '<p class="up-hint" style="margin:14px 0 0">' + out.pending.length +
         ' script(s) not yet marked.</p>' : '');
+
+    box.querySelectorAll('tr[data-row]').forEach(tr =>
+      tr.addEventListener('click', () => bxDrawer(tr.dataset.row)));
+    const pc = $('bx-print-comments');
+    if (pc) pc.addEventListener('click', () => bxPrintComments(out));
   } catch(err){ box.innerHTML = '<p class="tool-note err" style="display:block">' + esc(err.message) + '</p>'; }
+}
+
+/* ---- one student in full: comment, evidence, script ---- */
+async function bxDrawer(itemId){
+  const d = $('bx-drawer'), body = $('bx-drawer-body');
+  d.classList.remove('hidden');
+  body.innerHTML = '<p class="up-hint">Loading…</p>';
+  try {
+    const o = await api({ action:'batch_item', batchId: BX.batch.batchId, itemId: itemId });
+    const sc = o.score || {};
+    const C = o.criteria || {};
+    const names = { taskResponse:'Task Response', coherenceCohesion:'Coherence & Cohesion',
+                    lexicalResource:'Lexical Resource', grammaticalRange:'Grammatical Range & Accuracy' };
+    const crit = Object.keys(names).map(k => {
+      const c = C[k]; if (!c) return '';
+      return '<div class="bxd-crit"><h4>' + names[k] + '<span>' +
+        (c.band != null ? Number(c.band).toFixed(1) : '—') + '</span></h4>' +
+        (c.descriptorMet ? '<div class="desc">Meets: “' + esc(c.descriptorMet) + '”</div>' : '') +
+        (c.evidence || []).map(e => '<div class="ev">' + esc(e) + '</div>').join('') +
+        (c.lever ? '<div class="lever"><b>+0.5 lever:</b> ' + esc(c.lever) + '</div>' : '') +
+        (c.demo && c.demo.before ? '<div class="lever" style="color:var(--ink-soft)">' +
+           esc(c.demo.before) + ' → <b>' + esc(c.demo.after || '') + '</b></div>' : '') +
+        '</div>';
+    }).join('');
+
+    const errs = (o.errorPatterns || []).map(e =>
+      '<tr><td><b>' + esc(e.issue) + '</b></td><td style="color:var(--danger)">' + esc(e.example) +
+      '</td><td style="color:var(--good)">' + esc(e.correction) + '</td></tr>').join('');
+
+    body.innerHTML =
+      '<div class="bxd-head"><div>' +
+        '<h2 style="margin:0 0 4px">' + esc(o.item.student || 'Student') + '</h2>' +
+        '<p class="up-hint" style="margin:0">' + o.item.wordCount + ' words · ' + o.item.pages +
+        ' page(s) · transcription ' + esc(o.item.confidence || 'n/a') +
+        (o.rank ? ' · rank ' + o.rank + (o.percentile ? ' (' + o.percentile + 'th percentile)' : '') : '') + '</p>' +
+      '</div><div style="display:flex;gap:14px;align-items:flex-start">' +
+        '<div class="bxd-band">' + (sc.band != null ? Number(sc.band).toFixed(1) : '—') +
+        '<small>' + esc(sc.cefr || '') + '</small></div>' +
+        '<button class="bxd-x" type="button" id="bxd-close" aria-label="Close">✕</button>' +
+      '</div></div>' +
+      (sc.cefrNote ? '<p class="up-hint" style="margin:0 0 16px">' + esc(sc.cefrNote) + '</p>' : '') +
+      (sc.comment
+        ? '<div class="pane-title" style="font-size:1rem">Comment to the student ' +
+          '<button class="ghost mini" type="button" id="bxd-copy">Copy</button></div>' +
+          '<div class="bxd-comment" id="bxd-comment-text">' + esc(sc.comment) + '</div>'
+        : '<div class="bx-banner">No comment yet — comments are written by <b>5 · Finalise &amp; publish</b>.</div>') +
+      '<div class="pane-title" style="font-size:1rem;margin-top:22px">How each band was reached</div>' + crit +
+      ((o.strengths || []).length ? '<div class="pane-title" style="font-size:1rem;margin-top:18px">Strengths</div><ul class="blist">' +
+        o.strengths.map(s => '<li style="border-left:3px solid var(--good);padding-left:10px">' + esc(s) + '</li>').join('') + '</ul>' : '') +
+      ((o.priorities || []).length ? '<div class="pane-title" style="font-size:1rem;margin-top:14px">Priorities</div><ul class="blist">' +
+        o.priorities.map(s => '<li style="border-left:3px solid var(--accent);padding-left:10px">' + esc(s) + '</li>').join('') + '</ul>' : '') +
+      (errs ? '<div class="pane-title" style="font-size:1rem;margin-top:18px">Recurring errors</div>' +
+        '<div class="table-scroll"><table class="etable"><thead><tr><th>Issue</th><th>From the script</th><th>Correction</th></tr></thead><tbody>' +
+        errs + '</tbody></table></div>' : '') +
+      (o.moderationNote ? '<div class="pane-title" style="font-size:1rem;margin-top:18px">Moderation</div>' +
+        '<p class="up-hint" style="margin:0">' + esc(o.moderationNote) + '</p>' : '') +
+      '<div class="pane-title" style="font-size:1rem;margin-top:22px">What was marked</div>' +
+      '<div class="bxd-tx">' + esc(o.item.transcript || '') + '</div>';
+
+    $('bxd-close').addEventListener('click', () => d.classList.add('hidden'));
+    const cp = $('bxd-copy');
+    if (cp) cp.addEventListener('click', () => {
+      navigator.clipboard.writeText(sc.comment || '').then(() => {
+        cp.textContent = '✓ Copied'; setTimeout(() => cp.textContent = 'Copy', 1200);
+      }).catch(()=>{});
+    });
+  } catch(err){
+    body.innerHTML = '<p class="tool-note err" style="display:block">' + esc(err.message) + '</p>' +
+      '<button class="ghost" type="button" onclick="document.getElementById(\'bx-drawer\').classList.add(\'hidden\')">Close</button>';
+  }
+}
+
+/* ---- every comment on one printable page ---- */
+function bxPrintComments(out){
+  const rows = out.rows.filter(r => r.comment);
+  const w = window.open('', '_blank');
+  if (!w) return bxNote('bx-run-note','err','Your browser blocked the print window — allow pop-ups for this page.');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' +
+    esc(out.batch.label) + ' — comments</title><style>' +
+    'body{font-family:Georgia,serif;max-width:720px;margin:32px auto;padding:0 20px;line-height:1.65;color:#211c14}' +
+    'h1{font-size:1.5rem;margin:0 0 4px}.sub{color:#777;font-size:.85rem;margin:0 0 26px;font-family:system-ui,sans-serif}' +
+    '.c{page-break-inside:avoid;margin:0 0 26px;padding:0 0 20px;border-bottom:1px solid #ddd}' +
+    '.n{font-family:system-ui,sans-serif;font-weight:700;font-size:1rem;margin:0 0 2px}' +
+    '.b{font-family:system-ui,sans-serif;color:#9a3412;font-size:.84rem;margin:0 0 8px}' +
+    'p{margin:0}@media print{body{margin:0}}</style></head><body>' +
+    '<h1>' + esc(out.batch.label) + '</h1><div class="sub">' + rows.length +
+    ' comments · printed ' + new Date().toLocaleDateString() + '</div>' +
+    rows.map(r => '<div class="c"><div class="n">' + esc(r.student) + '</div><div class="b">Band ' +
+      r.band.toFixed(1) + ' · ' + esc(r.cefr) + '</div><p>' + esc(r.comment) + '</p></div>').join('') +
+    '</body></html>');
+  w.document.close();
+  setTimeout(() => w.print(), 350);
 }
 
 /* ---- anchors ---- */
