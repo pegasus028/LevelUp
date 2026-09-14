@@ -682,6 +682,53 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
   .ut-matrix th,.ut-matrix td{padding:7px 5px;}
   .ut-dot{width:31px;height:31px;}
 }
+
+/* ===================== BATCH MARKING ===================== */
+.bx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
+.bx-stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+.bx-stat .big{font-size:1.5rem;font-weight:700;line-height:1.1;color:var(--ink);}
+.bx-stat .lbl{font-size:.76rem;color:var(--ink-faint);margin-top:4px;}
+.bx-steps{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 0;}
+.bx-steps .ghost{margin:0;}
+.bx-prog{height:10px;background:var(--gold-wash);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:12px 0 6px;}
+.bx-prog span{display:block;height:100%;background:linear-gradient(90deg,var(--gold-soft),var(--gold));width:0;transition:width .25s;}
+.bx-log{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;line-height:1.5;color:var(--ink-soft);
+  background:#fffdf7;border:1px solid var(--line);border-radius:8px;padding:10px 12px;max-height:190px;overflow:auto;white-space:pre-wrap;}
+.bx-flag{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 7px;border-radius:6px;margin:0 3px 3px 0;border:1px solid var(--line-strong);background:var(--card);color:var(--ink-soft);}
+.bx-flag.warn{background:var(--gold-wash);border-color:var(--gold-soft);color:var(--gold);}
+.bx-flag.bad{background:var(--danger-wash);border-color:var(--danger);color:var(--danger);}
+.bx-flag.ok{background:var(--good-wash);border-color:var(--good);color:var(--good);}
+.bx-band{font-family:"Fraunces",serif;font-weight:600;font-size:1.02rem;color:var(--accent);}
+.bx-comment{font-size:.86rem;color:var(--ink-soft);line-height:1.55;max-width:52ch;}
+.bx-tx{width:100%;min-height:230px;font-family:"Newsreader",Georgia,serif;font-size:1rem;line-height:1.7;
+  border:1px solid var(--line-strong);border-radius:10px;padding:14px 16px;background:#fffdf7;color:var(--ink);resize:vertical;}
+.bx-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+@media (max-width:900px){.bx-split{grid-template-columns:1fr;}}
+.bx-scan{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;min-height:320px;}
+.bx-sec{display:none;}
+.bx-sec.on{display:block;}
+.bx-pick{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
+.bx-pick button{font-size:.84rem;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+  border-radius:9px;padding:7px 13px;cursor:pointer;}
+.bx-pick button.on{background:var(--accent-wash);border-color:var(--accent-soft);color:var(--accent);}
+.bx-q{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:7px;
+  background:var(--gold-wash);border:1px solid var(--gold-soft);color:var(--gold);}
+/* student results */
+.sr-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:0 0 16px;box-shadow:var(--shadow);}
+.sr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+.sr-band{font-family:"Fraunces",serif;font-size:2.5rem;font-weight:700;line-height:1;color:var(--accent);}
+.sr-band small{display:block;font-family:"Inter",sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-faint);margin-top:5px;}
+.sr-crit{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0 0;}
+.sr-crit .c{background:#fffdf7;border:1px solid var(--line);border-radius:9px;padding:10px 12px;}
+.sr-crit .c .n{font-size:.74rem;color:var(--ink-faint);line-height:1.3;}
+.sr-crit .c .v{font-size:1.16rem;font-weight:700;color:var(--ink);margin-top:3px;}
+.sr-crit .c .bar{height:5px;background:var(--gold-wash);border-radius:3px;margin-top:7px;overflow:hidden;}
+.sr-crit .c .bar i{display:block;height:100%;background:var(--gold);}
+.sr-note{margin:18px 0 0;padding:15px 17px;border-left:3px solid var(--gold);background:#fffdf7;border-radius:0 10px 10px 0;
+  font-family:"Newsreader",Georgia,serif;font-size:1.03rem;line-height:1.68;color:var(--ink);}
+.sr-spark{margin:6px 0 18px;}
 </style>
 </head>
 <body>
@@ -709,6 +756,8 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
     <button class="tab" data-screen="unittest" id="tab-unittest" disabled>CEFR LevelUp Test</button>
     <button class="tab" data-screen="studio" id="tab-studio" disabled>7 &middot; Lesson Studio</button>
     <button class="tab" data-screen="class" id="tab-class" disabled style="display:none">8 &middot; Class</button>
+    <button class="tab" data-screen="batch" id="tab-batch" disabled style="display:none">9 &middot; Batches</button>
+    <button class="tab" data-screen="myresults" id="tab-myresults" disabled style="display:none">📊 My Results</button>
   </nav>
 
   <main>
@@ -1042,6 +1091,135 @@ ul.blist li{margin-bottom:8px;font-size:.95rem;color:var(--ink-soft);}
         <div id="cls-targets-body"></div>
       </div>
     </section>
+
+    <!-- ============ 9 · BATCHES (teacher console only) ============ -->
+    <section class="screen" id="screen-batch">
+      <h2>Batches</h2>
+      <p class="lede" style="margin-bottom:20px">Mark a whole class in one run. Point at a Drive folder, give the task, and every script is transcribed, double-marked against the IELTS descriptors, ranked and commented.</p>
+
+      <div class="bx-pick" id="bx-nav">
+        <button type="button" data-sec="new" class="on">➕ New batch</button>
+        <button type="button" data-sec="run">▶ Run</button>
+        <button type="button" data-sec="check">👁 Transcript check</button>
+        <button type="button" data-sec="report">📊 Report</button>
+        <button type="button" data-sec="anchors">🎯 Anchors</button>
+      </div>
+
+      <!-- ---- new batch ---- -->
+      <div class="bx-sec on" id="bx-sec-new">
+        <div class="pane">
+          <div class="pane-title">Create a batch</div>
+          <div class="field"><label for="bx-label">Batch name</label>
+            <input type="text" id="bx-label" placeholder="Semester 1 Final exams — M4.1"></div>
+          <div class="field"><label for="bx-folder">Drive folder holding the scripts</label>
+            <input type="text" id="bx-folder" placeholder="https://drive.google.com/drive/folders/…"></div>
+          <div class="field"><label for="bx-promptlink">Task 2 prompt — Drive link to the question paper</label>
+            <input type="text" id="bx-promptlink" placeholder="https://drive.google.com/file/d/…  (image, PDF or Doc)">
+            <p class="up-hint" style="margin:6px 0 0">The printed question is read straight off the paper. Or paste the wording below instead.</p></div>
+          <div class="field"><label for="bx-prompttext">…or paste the prompt</label>
+            <textarea id="bx-prompttext" placeholder="Write about the following topic: …"></textarea></div>
+          <div class="file-row" style="align-items:flex-end">
+            <div class="field" style="margin:0"><label for="bx-mode">Source</label>
+              <select id="bx-mode">
+                <option value="exam">In-class exam — file name is the nickname</option>
+                <option value="classroom">Google Classroom homework — identity from the file</option>
+              </select></div>
+            <div class="field" style="margin:0;max-width:140px"><label for="bx-time">Minutes</label>
+              <input type="number" id="bx-time" value="40" min="0"></div>
+            <div class="field" style="margin:0;max-width:150px"><label for="bx-minwords">Minimum words</label>
+              <input type="number" id="bx-minwords" value="250" min="0"></div>
+            <div class="field" style="margin:0;max-width:160px"><label for="bx-class">Class tag</label>
+              <input type="text" id="bx-class" placeholder="M4.1"></div>
+          </div>
+          <button class="main" type="button" id="bx-create-btn">Create batch</button>
+          <div class="tool-note" id="bx-new-note"></div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-title">Your batches <button class="ghost" type="button" id="bx-list-btn">↻ Refresh</button></div>
+          <div id="bx-list"><p class="up-hint" style="margin:0">Press Refresh to list the batches on file.</p></div>
+        </div>
+      </div>
+
+      <!-- ---- run ---- -->
+      <div class="bx-sec" id="bx-sec-run">
+        <div class="pane" id="bx-run-head"><p class="up-hint" style="margin:0">Open a batch from the list first.</p></div>
+
+        <div class="pane" id="bx-run-body" style="display:none">
+          <div class="pane-title">Run the batch</div>
+          <div class="bx-steps">
+            <button class="ghost" type="button" id="bx-scan-btn">1 · Scan folder</button>
+            <button class="ghost" type="button" id="bx-cal-btn">2 · Calibrate markers</button>
+            <button class="ghost" type="button" id="bx-ocr-btn">3 · Transcribe all</button>
+            <button class="ghost" type="button" id="bx-mark-btn">4 · Double-mark all</button>
+            <button class="ghost" type="button" id="bx-final-btn">5 · Finalise &amp; publish</button>
+            <button class="ghost" type="button" id="bx-stop-btn" style="display:none">✖ Stop</button>
+          </div>
+          <div class="bx-prog"><span id="bx-prog-fill"></span></div>
+          <div class="bx-log" id="bx-log">Ready.</div>
+          <div class="tool-note" id="bx-run-note"></div>
+          <div id="bx-manifest" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- ---- transcript check ---- -->
+      <div class="bx-sec" id="bx-sec-check">
+        <div class="pane">
+          <div class="pane-title">Transcript check <span style="font-size:.78rem;font-weight:400;color:var(--ink-faint)">the scan on the left, what will be marked on the right</span></div>
+          <p class="up-hint" style="margin:0 0 12px">Correct anything the transcriber misread, then approve. Words nobody could read are marked <code>[?]</code> and are excluded from spelling judgements either way.</p>
+          <div class="file-row" style="margin-bottom:12px">
+            <select id="bx-check-pick" style="max-width:320px"></select>
+            <button class="ghost" type="button" id="bx-check-prev">← Previous</button>
+            <button class="ghost" type="button" id="bx-check-next">Next →</button>
+            <button class="ghost" type="button" id="bx-check-save">✓ Approve transcript</button>
+          </div>
+          <div class="tool-note" id="bx-check-note"></div>
+          <div class="bx-split" style="margin-top:12px">
+            <div><iframe class="bx-scan" id="bx-check-frame" title="Scanned script"></iframe>
+              <p class="up-hint" id="bx-check-files" style="margin:8px 0 0"></p></div>
+            <div><textarea class="bx-tx" id="bx-check-text" spellcheck="false"></textarea>
+              <p class="up-hint" id="bx-check-meta" style="margin:8px 0 0"></p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- report ---- -->
+      <div class="bx-sec" id="bx-sec-report">
+        <div class="pane" id="bx-report-body"><p class="up-hint" style="margin:0">Open a batch and press Refresh to build the report.</p></div>
+      </div>
+
+      <!-- ---- anchors ---- -->
+      <div class="bx-sec" id="bx-sec-anchors">
+        <div class="pane">
+          <div class="pane-title">Anchor scripts <span style="font-size:.78rem;font-weight:400;color:var(--ink-faint)">the calibration gate</span></div>
+          <p class="up-hint" style="margin:0 0 12px">Before a class is marked, the markers are tested on scripts whose band is already known. If they drift more than half a band, the run is held. Official IELTS sample responses with published examiner comments and bands are the best anchors — paste the script text and its band below.</p>
+          <div class="file-row" style="align-items:flex-end">
+            <div class="field" style="margin:0"><label for="bx-anchor-label">Label</label>
+              <input type="text" id="bx-anchor-label" placeholder="IELTS official sample — Band 7.5"></div>
+            <div class="field" style="margin:0;max-width:140px"><label for="bx-anchor-band">Official band</label>
+              <input type="number" id="bx-anchor-band" step="0.5" min="1" max="9" placeholder="7.5"></div>
+          </div>
+          <div class="field"><label for="bx-anchor-src">Source (a link, for the record)</label>
+            <input type="text" id="bx-anchor-src" placeholder="https://ielts.org/…"></div>
+          <div class="field"><label for="bx-anchor-prompt">The task that script answered</label>
+            <textarea id="bx-anchor-prompt" placeholder="Write about the following topic: …"></textarea></div>
+          <div class="field"><label for="bx-anchor-text">The script itself</label>
+            <textarea id="bx-anchor-text" style="min-height:180px" placeholder="Paste the candidate response…"></textarea></div>
+          <button class="main" type="button" id="bx-anchor-add">Add anchor</button>
+          <div class="tool-note" id="bx-anchor-note"></div>
+          <div id="bx-anchor-list" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MY RESULTS (student console only) ============ -->
+    <section class="screen" id="screen-myresults">
+      <h2>My Results</h2>
+      <p class="lede" style="margin-bottom:18px">Every piece of writing you have handed in, all in one place, so you can see how far you have come.</p>
+      <div class="tool-note" id="sr-note"></div>
+      <div id="sr-body"><p class="up-hint" style="margin:0">Loading your work…</p></div>
+    </section>
+
   </main>
 </div>
 
@@ -1250,8 +1428,10 @@ function showScreen(name){
   if (name === 'main-point' && typeof renderMainPoint === 'function') renderMainPoint();
   if (name === 'journey' && typeof renderJourney === 'function') renderJourney();
   if (name === 'class' && !IS_STUDENT && typeof refreshUnitScores === 'function' && !CLS.utLoaded){ CLS.utLoaded = true; refreshUnitScores(); }
+  if (name === 'batch' && !IS_STUDENT && typeof initBatchTab === 'function') initBatchTab();
+  if (name === 'myresults' && IS_STUDENT && typeof renderMyResults === 'function') renderMyResults();
 }
-function unlockTabs(){ tabs.forEach(t => { const s = t.dataset.screen; if (s==='login' || s==='class') return; if (IS_STUDENT && s==='assess') return; if (!IS_STUDENT && (s==='practice' || s==='journey')) return; t.disabled = false; }); }
+function unlockTabs(){ tabs.forEach(t => { const s = t.dataset.screen; if (s==='login' || s==='class' || s==='batch' || s==='myresults') return; if (IS_STUDENT && s==='assess') return; if (!IS_STUDENT && (s==='practice' || s==='journey')) return; t.disabled = false; }); }
 /* Students land on their motivating "My Journey" home; teachers on the Report. */
 function landScreen(){ return (IS_STUDENT && current) ? 'journey' : 'report'; }
 window.printScreen = function(id){
@@ -1272,6 +1452,7 @@ function configureRole(){
     $('login-btn').textContent = 'Unlock console';
     $('login-hint').textContent = 'The key is the TEACHER_KEY script property you set in Apps Script. Sessions last 12 hours.';
     $('tab-class').style.display = '';
+    $('tab-batch').style.display = '';
     $('tab-unittest').innerHTML = '📝 CEFR LevelUp Test';
     return;
   }
@@ -1281,6 +1462,8 @@ function configureRole(){
   $('tab-practice').style.display = '';
   $('tab-journey').style.display = '';
   $('tab-journey').innerHTML = '⭐ My Journey';
+  $('tab-myresults').style.display = '';
+  $('tab-myresults').innerHTML = '📊 My Results';
   $('tab-report').innerHTML = '1 &middot; Report';
   $('tab-main-point').innerHTML = '2 &middot; Main Point';
   $('tab-upgrades').innerHTML = '3 &middot; Recommended upgrades';
@@ -1314,6 +1497,7 @@ function baseUnlockForRole(){
   if (!IS_STUDENT){
     $('tab-assess').disabled = false;
     $('tab-class').disabled = false;
+    $('tab-batch').disabled = false;
   }
 }
 
@@ -1350,6 +1534,8 @@ function applyLoginResult(out){
   baseUnlockForRole();
   if (typeof applyRoleplayAccess === 'function') applyRoleplayAccess(out.roleplayAccess !== false);
   if (!IS_STUDENT){ showScreen('assess'); return; }
+  $('tab-myresults').disabled = false;
+  SR.loaded = false;
   STU.history = out.history || [];
   if (out.record && out.record.data){
     current = { meta: out.record.meta, essay: out.record.essay, data: migrateClientData(out.record.data) };
@@ -1376,6 +1562,8 @@ function doLogout(){
   clearAuth(); updateWhoChip();
   current = null; activeLevel = null;
   if (typeof STU === 'object') STU.history = [];
+  if (typeof SR === 'object'){ SR.loaded = false; SR.data = null; }
+  if (typeof BX === 'object'){ BX.batch = null; BX.manifest = []; BX.report = null; }
   tabs.forEach(t => { if (t.dataset.screen !== 'login') t.disabled = true; });
   $('vcount').style.display = $('gcount').style.display = 'none';
   $('login-err').classList.remove('show');
@@ -6620,6 +6808,510 @@ async function refreshUnitScores(){
   box.innerHTML = '<div class="table-scroll"><table class="ut-matrix"><thead>' + head +
     '</thead><tbody>' + body + '</tbody></table></div>' +
     '<p class="up-hint" style="margin:10px 0 0">Each cell is the student\u2019s <b>highest</b> CEFR LevelUp Test score at that CEFR level.</p>';
+}
+
+
+/* =================================================================
+ * BATCH MARKING  —  teacher console
+ * One folder in, a marked and ranked class out. The client drives the
+ * loop one script per request so no single Apps Script execution ever
+ * approaches the six-minute ceiling, progress is honest, and a dropped
+ * connection resumes instead of starting again.
+ * ================================================================= */
+const BX = { batch:null, manifest:[], report:null, stop:false, busy:false, checkIdx:0, anchors:[] };
+
+function bxNote(id, cls, text){
+  const n = $(id); if (!n) return;
+  n.className = 'tool-note ' + (cls || '');
+  n.textContent = text || '';
+  n.style.display = text ? 'block' : 'none';
+}
+function bxLog(line){
+  const box = $('bx-log'); if (!box) return;
+  box.textContent += '\n' + line;
+  box.scrollTop = box.scrollHeight;
+}
+function bxProg(done, total){
+  const f = $('bx-prog-fill'); if (!f) return;
+  f.style.width = total ? Math.round(done / total * 100) + '%' : '0%';
+}
+function bxSec(name){
+  document.querySelectorAll('#bx-nav button').forEach(b => b.classList.toggle('on', b.dataset.sec === name));
+  document.querySelectorAll('.bx-sec').forEach(s => s.classList.toggle('on', s.id === 'bx-sec-' + name));
+  if (name === 'check') bxRenderCheck();
+  if (name === 'report' && BX.batch) bxReport();
+  if (name === 'anchors') bxAnchorList();
+}
+function bxFlagHtml(flags){
+  const bad = { 'unassigned':1, 'off-task':1, 'very-short':1 };
+  const warn = { 'transcription-check':1, 'moderated':1, 'boundary':1, 'under-length':1,
+                 'identity-uncertain':1, 'missing-first-page':1, 'marker-gap-0.5':1,
+                 'filename-unmatched':1 };
+  return (flags || []).map(f =>
+    '<span class="bx-flag ' + (bad[f] ? 'bad' : warn[f] ? 'warn' : '') + '">' + esc(f) + '</span>').join('');
+}
+
+let bxInited = false;
+function initBatchTab(){
+  if (bxInited || IS_STUDENT) return;
+  bxInited = true;
+  document.querySelectorAll('#bx-nav button').forEach(b =>
+    b.addEventListener('click', () => bxSec(b.dataset.sec)));
+  $('bx-create-btn').addEventListener('click', bxCreate);
+  $('bx-list-btn').addEventListener('click', bxList);
+  $('bx-scan-btn').addEventListener('click', bxScan);
+  $('bx-cal-btn').addEventListener('click', bxCalibrate);
+  $('bx-ocr-btn').addEventListener('click', () => bxRun('ingest'));
+  $('bx-mark-btn').addEventListener('click', () => bxRun('grade'));
+  $('bx-final-btn').addEventListener('click', bxFinalise);
+  $('bx-stop-btn').addEventListener('click', () => { BX.stop = true; bxLog('Stopping after this script…'); });
+  $('bx-check-pick').addEventListener('change', e => { BX.checkIdx = Number(e.target.value) || 0; bxShowCheck(); });
+  $('bx-check-prev').addEventListener('click', () => { BX.checkIdx = Math.max(0, BX.checkIdx - 1); bxShowCheck(); });
+  $('bx-check-next').addEventListener('click', () => { BX.checkIdx = Math.min(BX.manifest.length - 1, BX.checkIdx + 1); bxShowCheck(); });
+  $('bx-check-save').addEventListener('click', bxSaveTranscript);
+  $('bx-anchor-add').addEventListener('click', bxAnchorAdd);
+  bxList();
+}
+
+/* ---- create & list ---- */
+async function bxCreate(){
+  const label = $('bx-label').value.trim();
+  const folder = $('bx-folder').value.trim();
+  if (!label) return bxNote('bx-new-note','err','Give the batch a name.');
+  if (!folder) return bxNote('bx-new-note','err','Paste the Drive folder link holding the scripts.');
+  const promptText = $('bx-prompttext').value.trim();
+  const promptLink = $('bx-promptlink').value.trim();
+  if (!promptText && !promptLink) return bxNote('bx-new-note','err','Give the Task 2 prompt — a Drive link to the paper, or paste the wording.');
+  try {
+    loading(true, 'Creating the batch…', promptLink && !promptText ? 'Reading the printed question off the paper.' : '');
+    const out = await api({ action:'batch_create', label, folder,
+      promptText, promptLink, mode: $('bx-mode').value,
+      timeLimit: Number($('bx-time').value) || 40,
+      minWords: Number($('bx-minwords').value) || 250,
+      classTag: $('bx-class').value.trim() });
+    loading(false);
+    bxNote('bx-new-note','ok','✓ Batch created. The task reads: “' +
+      String(out.promptText).replace(/\s+/g,' ').slice(0,140) + '…”');
+    $('bx-label').value = ''; $('bx-folder').value = '';
+    $('bx-prompttext').value = ''; $('bx-promptlink').value = '';
+    await bxList();
+    await bxOpen(out.batchId);
+  } catch(err){ loading(false); bxNote('bx-new-note','err', err.message); }
+}
+
+async function bxList(){
+  try {
+    const out = await api({ action:'batch_list' });
+    const rows = (out.batches || []).map(b =>
+      '<tr><td><b>' + esc(b.label) + '</b><div class="hmeta">' + esc(b.classTag || '') +
+      (b.classTag ? ' · ' : '') + esc(String(b.mode)) + ' · ' +
+      (b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '') + '</div></td>' +
+      '<td>' + esc(b.status) + '</td>' +
+      '<td style="font-size:.82rem;color:var(--ink-soft)">' + b.items + ' scripts · ' +
+      b.transcribed + ' read · ' + b.graded + ' marked</td>' +
+      '<td><button class="ghost mini" data-open="' + esc(b.batchId) + '">Open</button>' +
+      (b.sheetUrl ? ' <a class="ghost mini" style="text-decoration:none" href="' + esc(b.sheetUrl) +
+        '" target="_blank" rel="noopener">📊 Sheet</a>' : '') + '</td></tr>').join('');
+    $('bx-list').innerHTML = rows
+      ? '<div class="table-scroll"><table class="roster-table"><thead><tr><th>Batch</th><th>Status</th><th>Progress</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<p class="up-hint" style="margin:0">No batches yet — create one above.</p>';
+    $('bx-list').querySelectorAll('button[data-open]').forEach(b =>
+      b.addEventListener('click', () => bxOpen(b.dataset.open)));
+  } catch(err){ bxNote('bx-new-note','err','Could not list batches: ' + err.message); }
+}
+
+async function bxOpen(batchId){
+  try {
+    loading(true, 'Opening the batch…');
+    const out = await api({ action:'batch_report', batchId });
+    loading(false);
+    BX.batch = out.batch;
+    BX.report = out;
+    BX.manifest = (out.pending || []).concat((out.rows || []).map(r => ({
+      itemId:r.itemId, student:r.student, status:'graded', pages:r.pages, flags:r.flags })));
+    $('bx-run-body').style.display = '';
+    $('bx-run-head').innerHTML =
+      '<div class="pane-title">' + esc(BX.batch.label) + ' <span class="badge">' + esc(BX.batch.status) + '</span></div>' +
+      '<p class="up-hint" style="margin:0 0 8px"><b>Task:</b> ' +
+      esc(String(BX.batch.promptText).replace(/\s+/g,' ').slice(0,300)) + '</p>' +
+      '<p class="up-hint" style="margin:0">' + BX.batch.timeLimit + ' minutes · minimum ' +
+      BX.batch.minWords + ' words · <a href="' + esc(BX.batch.folderUrl) +
+      '" target="_blank" rel="noopener">source folder</a>' +
+      (BX.batch.calibrationNote ? ' · ' + esc(BX.batch.calibrationNote) : '') + '</p>';
+    $('bx-log').textContent = 'Batch “' + BX.batch.label + '” opened.';
+    bxProg(0,0);
+    bxRenderManifest();
+    bxSec('run');
+  } catch(err){ loading(false); bxNote('bx-new-note','err', err.message); }
+}
+
+/* ---- scan ---- */
+async function bxScan(){
+  if (!BX.batch) return;
+  try {
+    loading(true, 'Reading the folder…', 'Pairing multi-page scripts and checking them against the roster.');
+    const out = await api({ action:'batch_scan', batchId: BX.batch.batchId });
+    loading(false);
+    BX.manifest = out.items || [];
+    bxLog('Scanned ' + out.fileCount + ' file(s) → ' + BX.manifest.length + ' script(s).');
+    if ((out.missing || []).length){
+      bxLog('⚠ On the roster but nothing in the folder: ' + out.missing.join(', '));
+    }
+    const unass = BX.manifest.filter(m => !m.student).length;
+    if (unass) bxLog('⚠ ' + unass + ' submission(s) could not be matched to a student — assign them below.');
+    bxNote('bx-run-note','ok','✓ ' + BX.manifest.length + ' script(s) found.' +
+      ((out.missing||[]).length ? ' ' + out.missing.length + ' student(s) missing.' : ''));
+    bxRenderManifest();
+  } catch(err){ loading(false); bxNote('bx-run-note','err', err.message); }
+}
+
+function bxRenderManifest(){
+  const box = $('bx-manifest');
+  if (!BX.manifest.length){
+    box.innerHTML = '<p class="up-hint" style="margin:0">Press <b>Scan folder</b> to build the list.</p>';
+    return;
+  }
+  const roster = (CLS.students || []).map(s => s.name);
+  const rows = BX.manifest.map((m, i) => {
+    const who = m.student
+      ? esc(m.student)
+      : '<select data-assign="' + esc(m.itemId) + '" style="max-width:190px"><option value="">— assign —</option>' +
+        roster.map(n => '<option>' + esc(n) + '</option>').join('') + '</select>';
+    return '<tr><td>' + who + '<div class="hmeta">' + esc(String(m.files || m.fileNames || '').slice(0,80)) + '</div></td>' +
+      '<td>' + (m.pages || 1) + '</td>' +
+      '<td style="font-size:.8rem;color:var(--ink-soft)">' + esc(m.method || '') + '</td>' +
+      '<td>' + esc(m.status || '') + '</td>' +
+      '<td>' + bxFlagHtml(m.flags) + '</td></tr>';
+  }).join('');
+  box.innerHTML = '<div class="pane-title" style="font-size:1rem">Scripts in this batch</div>' +
+    '<div class="table-scroll"><table class="roster-table"><thead><tr><th>Student</th><th>Pages</th><th>Matched by</th><th>Status</th><th>Flags</th></tr></thead><tbody>' +
+    rows + '</tbody></table></div>';
+  box.querySelectorAll('select[data-assign]').forEach(sel =>
+    sel.addEventListener('change', async () => {
+      if (!sel.value) return;
+      try {
+        await api({ action:'batch_item_assign', batchId: BX.batch.batchId,
+                    itemId: sel.dataset.assign, student: sel.value });
+        bxLog('Assigned ' + sel.dataset.assign + ' → ' + sel.value);
+        await bxScan();
+      } catch(err){ bxNote('bx-run-note','err', err.message); }
+    }));
+}
+
+/* ---- calibration ---- */
+async function bxCalibrate(){
+  if (!BX.batch) return;
+  try {
+    loading(true, 'Testing the markers on known scripts…', 'Nothing is marked until they land within half a band.');
+    const out = await api({ action:'batch_calibrate', batchId: BX.batch.batchId });
+    loading(false);
+    (out.results || []).forEach(r => bxLog('anchor “' + r.label + '”: official ' + r.official +
+      ', marked ' + r.marked + ' (drift ' + (r.drift > 0 ? '+' : '') + r.drift + ')' + (r.within ? '' : '  ✖')));
+    bxLog(out.note);
+    bxNote('bx-run-note', out.calibrated ? 'ok' : 'err', out.note);
+  } catch(err){ loading(false); bxNote('bx-run-note','err', err.message); }
+}
+
+/* ---- the runner ---- */
+async function bxRun(kind){
+  if (!BX.batch || BX.busy) return;
+  if (!BX.manifest.length){ bxNote('bx-run-note','err','Scan the folder first.'); return; }
+  // Resumable by design: transcription picks up only what has not been read yet,
+  // marking only what has been read. A failed script keeps its old status, so
+  // pressing the same button again retries exactly those and nothing else.
+  const todo = BX.manifest.filter(m => m.student && (kind === 'ingest'
+    ? (m.status === 'scanned' || m.status === 'failed' || !m.status)
+    : (m.status === 'transcribed' || m.status === 'approved')));
+  if (!todo.length){
+    bxNote('bx-run-note','ok', kind === 'ingest'
+      ? 'Every script has already been transcribed.'
+      : 'Nothing is waiting to be marked — transcribe first, or it is all marked already.');
+    return;
+  }
+  BX.busy = true; BX.stop = false;
+  $('bx-stop-btn').style.display = '';
+  bxNote('bx-run-note','', '');
+  bxLog((kind === 'ingest' ? 'Transcribing ' : 'Double-marking ') + todo.length + ' script(s)…');
+
+  let done = 0, failed = 0;
+  for (const m of todo){
+    if (BX.stop){ bxLog('Stopped by you at ' + done + ' of ' + todo.length + '.'); break; }
+    try {
+      const out = await api({
+        action: kind === 'ingest' ? 'batch_item_ingest' : 'batch_item_grade',
+        batchId: BX.batch.batchId, itemId: m.itemId });
+      if (kind === 'ingest'){
+        m.status = 'transcribed';
+        m.flags = out.flags || m.flags;
+        bxLog('· ' + m.student + ' — ' + out.wordCount + ' words, confidence ' + out.confidence +
+          (out.illegibleCount ? ', ' + out.illegibleCount + ' unreadable' : ''));
+      } else {
+        m.status = 'graded';
+        bxLog('· ' + m.student + ' — band ' + out.band + ' (' + out.cefr + ')' +
+          (out.moderated ? '  ⚖ moderated' : '') +
+          (out.flags && out.flags.length ? '  [' + out.flags.join(' ') + ']' : ''));
+      }
+    } catch(err){
+      failed++;
+      bxLog('✖ ' + (m.student || m.itemId) + ' — ' + err.message);
+    }
+    done++;
+    bxProg(done, todo.length);
+    bxRenderManifest();
+  }
+  BX.busy = false;
+  $('bx-stop-btn').style.display = 'none';
+  bxNote('bx-run-note', failed ? 'err' : 'ok',
+    done + ' of ' + todo.length + ' done' + (failed ? ', ' + failed + ' failed — re-run to retry just those.' : '.'));
+}
+
+/* ---- finalise ---- */
+async function bxFinalise(){
+  if (!BX.batch) return;
+  try {
+    loading(true, 'Ranking the class and writing the comments…',
+      'Each comment is checked for length and for quoting the script accurately before it is accepted.');
+    const out = await api({ action:'batch_finalise', batchId: BX.batch.batchId });
+    loading(false);
+    bxLog('Finalised: ' + out.graded + ' scripts, ' + out.commentsWritten + ' comments written. ' +
+      'Class mean ' + out.mean + ', spread ' + out.sd + '.');
+    (out.failures || []).forEach(f => bxLog('✖ comment failed for ' + f.student + ': ' + f.error));
+    bxNote('bx-run-note','ok','✓ Published. The students can see their results now.');
+    await bxOpen(BX.batch.batchId);
+    bxSec('report');
+  } catch(err){ loading(false); bxNote('bx-run-note','err', err.message); }
+}
+
+/* ---- transcript check ---- */
+function bxRenderCheck(){
+  const sel = $('bx-check-pick');
+  if (!BX.manifest.length){ sel.innerHTML = '<option>— scan a batch first —</option>'; return; }
+  sel.innerHTML = BX.manifest.map((m, i) =>
+    '<option value="' + i + '">' + esc(m.student || '(unassigned)') +
+    ((m.flags || []).indexOf('transcription-check') >= 0 ? '  ⚠ needs a look' : '') + '</option>').join('');
+  sel.value = String(BX.checkIdx);
+  bxShowCheck();
+}
+
+async function bxShowCheck(){
+  const m = BX.manifest[BX.checkIdx];
+  if (!m || !BX.batch) return;
+  $('bx-check-pick').value = String(BX.checkIdx);
+  try {
+    const out = await api({ action:'batch_item', batchId: BX.batch.batchId, itemId: m.itemId });
+    const ids = out.item.fileIds || [];
+    $('bx-check-frame').src = ids.length ? ('https://drive.google.com/file/d/' + ids[0] + '/preview') : 'about:blank';
+    $('bx-check-files').innerHTML = ids.map((id, i) =>
+      '<a href="https://drive.google.com/file/d/' + esc(id) + '/view" target="_blank" rel="noopener">page ' +
+      (i + 1) + '</a>').join(' · ') || 'No files.';
+    $('bx-check-text').value = out.item.transcript || '';
+    $('bx-check-meta').textContent = out.item.wordCount + ' words · ' + out.item.pages +
+      ' page(s) · transcription confidence ' + (out.item.confidence || 'unknown');
+    bxNote('bx-check-note','','');
+  } catch(err){ bxNote('bx-check-note','err', err.message); }
+}
+
+async function bxSaveTranscript(){
+  const m = BX.manifest[BX.checkIdx];
+  if (!m || !BX.batch) return;
+  try {
+    const out = await api({ action:'batch_item_transcript', batchId: BX.batch.batchId,
+      itemId: m.itemId, transcript: $('bx-check-text').value, approve:true });
+    m.status = 'approved';
+    m.flags = (m.flags || []).filter(f => f !== 'transcription-check');
+    bxNote('bx-check-note','ok','✓ Approved — ' + out.wordCount + ' words. This is what will be marked.');
+    bxRenderCheck();
+  } catch(err){ bxNote('bx-check-note','err', err.message); }
+}
+
+/* ---- report ---- */
+async function bxReport(){
+  if (!BX.batch) return;
+  const box = $('bx-report-body');
+  box.innerHTML = '<p class="up-hint" style="margin:0">Building the report…</p>';
+  try {
+    const out = await api({ action:'batch_report', batchId: BX.batch.batchId });
+    BX.report = out;
+    if (!out.rows.length){ box.innerHTML = '<p class="up-hint" style="margin:0">Nothing marked in this batch yet.</p>'; return; }
+    const mean = Math.round(out.rows.reduce((a,r) => a + r.overall, 0) / out.rows.length * 100) / 100;
+    const weakest = ['tr','cc','lr','gra'].sort((a,b) => out.dims[a] - out.dims[b])[0];
+    const dimName = { tr:'Task Response', cc:'Coherence & Cohesion', lr:'Lexical Resource', gra:'Grammar' };
+
+    const rows = out.rows.map(r =>
+      '<tr><td>' + r.rank + '</td><td><b>' + esc(r.student) + '</b></td>' +
+      '<td><span class="bx-band">' + r.band.toFixed(1) + '</span></td>' +
+      '<td>' + esc(r.cefr) + '<div class="hmeta">' + esc(r.cefrNote || '') + '</div></td>' +
+      '<td style="font-variant-numeric:tabular-nums">' + r.tr + ' · ' + r.cc + ' · ' + r.lr + ' · ' + r.gra + '</td>' +
+      '<td>' + r.words + '</td><td><span class="bx-q">Q' + r.quartile + '</span></td>' +
+      '<td>' + bxFlagHtml(r.flags) + '</td>' +
+      '<td class="bx-comment">' + esc(r.comment || '') + '</td></tr>').join('');
+
+    const issues = (out.topIssues || []).map(t =>
+      '<div class="issue-card"><span class="cnt">×' + t.count + '</span><b>' + esc(t.issue) + '</b>' +
+      '<div style="margin-top:4px;color:var(--ink-soft)">e.g. <span style="color:var(--danger)">' +
+      esc(t.example) + '</span> → <span style="color:var(--good)">' + esc(t.correction) + '</span></div></div>').join('');
+
+    const flagged = out.flagged.map(r =>
+      '<tr><td><b>' + esc(r.student) + '</b></td><td>' + r.band.toFixed(1) + '</td>' +
+      '<td>' + bxFlagHtml(r.flags) + '</td><td style="font-size:.84rem;color:var(--ink-soft)">' +
+      esc(r.moderationNote || '') + '</td></tr>').join('');
+
+    box.innerHTML =
+      '<div class="pane-title">' + esc(out.batch.label) +
+      (out.batch.sheetUrl ? ' <a class="ghost mini" style="text-decoration:none" href="' +
+        esc(out.batch.sheetUrl) + '" target="_blank" rel="noopener">📊 Open the Sheet</a>' : '') +
+      ' <button class="ghost mini" type="button" onclick="printScreen(\'screen-batch\')">🖨 Print</button></div>' +
+      '<div class="bx-grid" style="margin:12px 0 16px">' +
+      '<div class="bx-stat"><div class="big">' + out.rows.length + '</div><div class="lbl">Scripts marked</div></div>' +
+      '<div class="bx-stat"><div class="big">' + mean.toFixed(2) + '</div><div class="lbl">Class mean band</div></div>' +
+      '<div class="bx-stat"><div class="big">' + esc(dimName[weakest]) + '</div><div class="lbl">Weakest criterion (' + out.dims[weakest] + ')</div></div>' +
+      '<div class="bx-stat"><div class="big">' + out.flagged.length + '</div><div class="lbl">Need your eyes</div></div></div>' +
+      (out.batch.calibrationNote ? '<p class="up-hint" style="margin:0 0 12px">🎯 ' + esc(out.batch.calibrationNote) + '</p>' : '') +
+      '<div class="table-scroll" style="margin-bottom:18px"><table class="roster-table"><thead><tr>' +
+      '<th>#</th><th>Student</th><th>Band</th><th>CEFR</th><th>TR · CC · LR · GRA</th><th>Words</th>' +
+      '<th>Quartile</th><th>Flags</th><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      (flagged ? '<div class="pane-title" style="font-size:1rem">Moderation queue</div>' +
+        '<div class="table-scroll" style="margin-bottom:18px"><table class="roster-table"><thead><tr><th>Student</th><th>Band</th><th>Flags</th><th>What happened</th></tr></thead><tbody>' +
+        flagged + '</tbody></table></div>' : '') +
+      (issues ? '<div class="pane-title" style="font-size:1rem">Most common patterns across the class</div>' + issues : '') +
+      (out.pending.length ? '<p class="up-hint" style="margin:14px 0 0">' + out.pending.length +
+        ' script(s) not yet marked.</p>' : '');
+  } catch(err){ box.innerHTML = '<p class="tool-note err" style="display:block">' + esc(err.message) + '</p>'; }
+}
+
+/* ---- anchors ---- */
+async function bxAnchorAdd(){
+  const text = $('bx-anchor-text').value.trim();
+  const band = Number($('bx-anchor-band').value);
+  if (!text) return bxNote('bx-anchor-note','err','Paste the anchor script.');
+  if (!band) return bxNote('bx-anchor-note','err','Give the official band for it.');
+  try {
+    loading(true, 'Saving the anchor…');
+    await api({ action:'anchor_add', label: $('bx-anchor-label').value.trim(),
+      officialBand: band, sourceUrl: $('bx-anchor-src').value.trim(),
+      promptText: $('bx-anchor-prompt').value.trim(), essayText: text });
+    loading(false);
+    bxNote('bx-anchor-note','ok','✓ Anchor saved. The calibration gate uses every active anchor.');
+    $('bx-anchor-text').value = ''; $('bx-anchor-label').value = ''; $('bx-anchor-band').value = '';
+    bxAnchorList();
+  } catch(err){ loading(false); bxNote('bx-anchor-note','err', err.message); }
+}
+
+async function bxAnchorList(){
+  try {
+    const out = await api({ action:'anchor_list' });
+    BX.anchors = out.anchors || [];
+    $('bx-anchor-list').innerHTML = BX.anchors.length
+      ? '<div class="table-scroll"><table class="roster-table"><thead><tr><th>Anchor</th><th>Official band</th><th>Words</th><th>Source</th></tr></thead><tbody>' +
+        BX.anchors.map(a => '<tr><td>' + esc(a.label) + '</td><td><b>' + a.officialBand + '</b></td>' +
+        '<td>' + a.words + '</td><td style="font-size:.8rem">' + (a.sourceUrl
+          ? '<a href="' + esc(a.sourceUrl) + '" target="_blank" rel="noopener">link</a>' : '—') +
+        '</td></tr>').join('') + '</tbody></table></div>'
+      : '<p class="up-hint" style="margin:0">No anchors yet. Without them a run is uncalibrated — it will still mark, but nothing is checked against a known band first.</p>';
+  } catch(err){ bxNote('bx-anchor-note','err', err.message); }
+}
+
+
+/* =================================================================
+ * MY RESULTS  —  student console
+ * One sign-in, every piece of work, and the line that shows the climb.
+ * ================================================================= */
+const SR = { loaded:false, data:null };
+
+async function renderMyResults(force){
+  if (!IS_STUDENT) return;
+  const box = $('sr-body');
+  if (SR.loaded && !force && SR.data){ srPaint(SR.data); return; }
+  box.innerHTML = '<p class="up-hint" style="margin:0">Loading your work…</p>';
+  try {
+    const out = await api({ action:'my_submissions' });
+    SR.loaded = true; SR.data = out;
+    srPaint(out);
+  } catch(err){
+    box.innerHTML = '<p class="up-hint" style="margin:0">Your results will appear here once your teacher publishes them.</p>';
+  }
+}
+
+function srSpark(series){
+  if (!series || series.length < 2) return '';
+  const w = 460, h = 96, pad = 26;
+  const bands = series.map(s => s.band);
+  const lo = Math.max(0, Math.min.apply(null, bands) - 0.5);
+  const hi = Math.min(9, Math.max.apply(null, bands) + 0.5);
+  const span = (hi - lo) || 1;
+  const x = i => pad + (i / (series.length - 1)) * (w - pad * 2);
+  const y = b => h - pad + 6 - ((b - lo) / span) * (h - pad - 6);
+  const pts = series.map((s, i) => x(i) + ',' + y(s.band));
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="110" role="img" ' +
+    'aria-label="Your band over time" style="max-width:520px">' +
+    '<polyline fill="none" stroke="#c9a85c" stroke-width="2.5" stroke-linejoin="round" ' +
+    'stroke-linecap="round" points="' + pts.join(' ') + '"/>' +
+    series.map((s, i) =>
+      '<circle cx="' + x(i) + '" cy="' + y(s.band) + '" r="4.5" fill="#9a3412"/>' +
+      '<text x="' + x(i) + '" y="' + (y(s.band) - 11) + '" text-anchor="middle" ' +
+      'font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#211c14">' +
+      s.band.toFixed(1) + '</text>').join('') +
+    '</svg>';
+}
+
+function srPaint(out){
+  const box = $('sr-body');
+  const subs = out.submissions || [];
+  if (!subs.length){
+    box.innerHTML = '<div class="pane" style="text-align:center;padding:36px 24px">' +
+      '<h3 style="margin-bottom:8px">Nothing published yet</h3>' +
+      '<p class="lede" style="margin:0 auto;max-width:480px">When your teacher finishes marking an exam, your band, your feedback and your own writing will all show up here.</p></div>';
+    return;
+  }
+  const qWord = { 1:'the top quarter of the class', 2:'the second quarter of the class',
+                  3:'the third quarter of the class', 4:'the fourth quarter of the class' };
+  const crit = [['Task Response','tr'],['Coherence & Cohesion','cc'],
+                ['Lexical Resource','lr'],['Grammar','gra']];
+
+  const head = (out.series && out.series.length > 1)
+    ? '<div class="pane sr-spark"><div class="pane-title">Your band over time</div>' +
+      srSpark(out.series) + '<p class="up-hint" style="margin:8px 0 0">Best so far: <b>' +
+      out.bestBand.toFixed(1) + '</b> across ' + subs.length + ' pieces of writing.</p></div>'
+    : '';
+
+  box.innerHTML = head + subs.map((s, i) =>
+    '<div class="sr-card">' +
+      '<div class="sr-top"><div>' +
+        '<h3 style="margin:0 0 4px">' + esc(s.label) + '</h3>' +
+        '<p class="up-hint" style="margin:0">' +
+          (s.date ? new Date(s.date).toLocaleDateString() : '') + ' · ' + s.words + ' words · ' +
+          '<span class="bx-q">' + esc(qWord[s.quartile] || '') + '</span></p>' +
+      '</div><div style="text-align:right">' +
+        '<div class="sr-band">' + s.band.toFixed(1) + '<small>IELTS band</small></div>' +
+        '<div style="margin-top:8px"><span class="badge">' + esc(s.cefr) + '</span></div>' +
+      '</div></div>' +
+      '<div class="sr-crit">' + crit.map(c =>
+        '<div class="c"><div class="n">' + c[0] + '</div><div class="v">' +
+        (s[c[1]] == null ? '—' : s[c[1]].toFixed(1)) + '</div>' +
+        '<div class="bar"><i style="width:' + Math.round(((s[c[1]] || 0) / 9) * 100) + '%"></i></div></div>').join('') +
+      '</div>' +
+      (s.cefrNote ? '<p class="up-hint" style="margin:10px 0 0">' + esc(s.cefrNote) + '</p>' : '') +
+      (s.comment ? '<div class="sr-note">' + esc(s.comment) + '</div>' : '') +
+      '<div style="margin-top:14px"><button class="ghost mini" type="button" data-script="' +
+        esc(s.batchId) + '|' + esc(s.itemId) + '">📄 See what I wrote</button></div>' +
+      '<div id="sr-tx-' + i + '" style="display:none;margin-top:12px"></div>' +
+    '</div>').join('');
+
+  box.querySelectorAll('button[data-script]').forEach((b, i) =>
+    b.addEventListener('click', async () => {
+      const holder = $('sr-tx-' + i);
+      if (holder.style.display === 'block'){ holder.style.display = 'none'; return; }
+      const parts = b.dataset.script.split('|');
+      holder.style.display = 'block';
+      holder.innerHTML = '<p class="up-hint" style="margin:0">Loading…</p>';
+      try {
+        const d = await api({ action:'batch_item', batchId: parts[0], itemId: parts[1] });
+        holder.innerHTML = '<div class="sr-note" style="border-left-color:var(--line-strong);' +
+          'white-space:pre-wrap;font-size:.98rem">' + esc(d.item.transcript || '') + '</div>' +
+          '<p class="up-hint" style="margin:8px 0 0">This is your writing exactly as you wrote it — ' +
+          'spelling and all — because that is what was marked.</p>';
+      } catch(err){ holder.innerHTML = '<p class="tool-note err" style="display:block">' + esc(err.message) + '</p>'; }
+    }));
 }
 
 /* ---------------- startup ---------------- */
