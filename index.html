@@ -1673,7 +1673,7 @@ async function doLoginClick(){
 function applyLoginResult(out){
   baseUnlockForRole();
   if (typeof applyRoleplayAccess === 'function') applyRoleplayAccess(out.roleplayAccess !== false);
-  if (!IS_STUDENT){ showScreen('assess'); return; }
+  if (!IS_STUDENT){ showScreen('assess'); pcMaybeRun(); return; }
   $('tab-myresults').disabled = false;
   SR.loaded = false;
   STU.history = out.history || [];
@@ -1711,10 +1711,85 @@ function doLogout(){
   $('login-id').focus();
 }
 
+/* ============================================================
+ * QUILLMOOR STAFF ROOM HAND-OFF (Oct 2026)
+ * The Staff Room (pegasus028.github.io/IELTS-WT2/teacher.html) opens this
+ * console as teacher.html?from=pc&auto=1#pc=<base64 JSON> with
+ *   { reportId, respondentId, prompt, essay, targetWords, auto }.
+ * We fill Respondent's ID, the prompt and the response, submit for analysis
+ * as soon as the teacher is signed in, then hand the Overall CEFR rating and
+ * the Examiner feedback back: into the shared localStorage queue
+ * 'lue_results' (same origin as the Staff Room) and by postMessage to the
+ * opener. A manual re-submit of the same essay also sends its result back.
+ * ============================================================ */
+const PC = { item:null, started:false, sent:false };
+(function readHandoff(){
+  if (IS_STUDENT) return;
+  let item = null;
+  const m = /[#&]pc=([^&]+)/.exec(location.hash || '');
+  if (m){ try { item = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); } catch(e){ item = null; } }
+  if (!item && /[?&]from=pc\b/.test(location.search)){ try { item = JSON.parse(localStorage.getItem('lue_handoff') || 'null'); } catch(e){} }
+  if (location.hash || /[?&]from=pc\b/.test(location.search)){ try { history.replaceState({}, document.title, location.pathname); } catch(e){} }
+  try { localStorage.removeItem('lue_handoff'); } catch(e){}
+  if (!item || !item.essay) return;
+  item.respondentId = item.respondentId || item.name || '';
+  item.auto = !!item.auto && !!item.reportId;
+  PC.item = item;
+})();
+function pcBanner(html, kind){
+  let b = document.getElementById('pc-banner');
+  if (!b){
+    b = document.createElement('div'); b.id = 'pc-banner';
+    b.style.cssText = 'margin:0 0 14px;padding:12px 16px;border-radius:10px;font-size:.92rem;line-height:1.45;border-left:4px solid var(--gold)';
+    const host = $('screen-assess'); host.insertBefore(b, host.firstChild);
+    const lhost = $('login-err'); if (lhost && lhost.parentNode){ const lb = document.createElement('p'); lb.id = 'pc-login-note'; lb.className = 'login-note'; lb.style.marginTop = '12px'; lhost.parentNode.appendChild(lb); }
+  }
+  b.style.background = kind === 'err' ? 'rgba(200,60,60,.10)' : kind === 'ok' ? 'rgba(60,150,90,.12)' : 'rgba(200,160,60,.12)';
+  b.innerHTML = html;
+  const ln = document.getElementById('pc-login-note'); if (ln) ln.innerHTML = html;
+}
+function pcFill(){
+  const it = PC.item;
+  $('student-name').value = it.respondentId;
+  $('prompt-text').value = it.prompt || '';
+  $('essay-text').value = it.essay;
+  if (it.targetWords) $('target-words').value = it.targetWords;
+  updateWC();
+}
+/* Called after boot and after sign-in: fill the form and, when asked, submit. */
+function pcMaybeRun(){
+  if (!PC.item || PC.started) return;
+  if (!AUTH.token){ pcBanner('<b>An essay from the Quillmoor Staff Room is waiting</b> for ' + esc(PC.item.respondentId) + '. Sign in with the teacher key and it will be marked automatically.'); return; }
+  PC.started = true;
+  pcFill();
+  if (!PC.item.auto){ pcBanner('<b>Filled in from the Quillmoor Staff Room</b> — ' + esc(PC.item.respondentId) + '. Press <b>Submit for analysis</b> when ready.'); return; }
+  pcBanner('<b>Marking automatically for the Quillmoor Staff Room</b> — ' + esc(PC.item.respondentId) + '. The Overall CEFR rating and examiner feedback will be sent back to the Staff Room.');
+  showScreen('assess');
+  setTimeout(submit, 60);
+}
+/* After a successful analysis: send the result back if it is the hand-off essay. */
+function pcReturn(name, essay){
+  const it = PC.item;
+  if (!it || !it.reportId || PC.sent || !current || !current.data) return;
+  if (name !== it.respondentId || String(essay).trim() !== String(it.essay).trim()) return;
+  const a = current.data.assessment || {};
+  const res = { key: it.reportId + ':' + Date.now(), reportId: it.reportId, respondentId: it.respondentId,
+    cefr: a.overallLevel || '', feedback: a.feedback || '', savedId: current.data.savedId || '', at: new Date().toISOString() };
+  let queued = false;
+  try { const q = JSON.parse(localStorage.getItem('lue_results') || '[]'); const list = Array.isArray(q) ? q : []; list.push(res); localStorage.setItem('lue_results', JSON.stringify(list)); queued = true; } catch(e){}
+  try { if (window.opener && !window.opener.closed) window.opener.postMessage({ type:'levelup-result', item: res }, '*'); } catch(e){}
+  PC.sent = true;
+  pcBanner(queued || window.opener
+    ? '<b>✓ Sent back to the Quillmoor Staff Room</b> — ' + esc(it.respondentId) + ': Overall CEFR <b>' + esc(res.cefr || '—') + '</b> and the examiner feedback. If the Staff Room is closed, it picks the result up next time it opens.'
+    : '<b>Could not reach the Staff Room</b> from this browser. Copy the Overall CEFR and Examiner feedback across by hand.', (queued || window.opener) ? 'ok' : 'err');
+  const rb = $('report-body'); const b = document.getElementById('pc-banner');
+  if (rb && b){ const c = b.cloneNode(true); c.id = 'pc-banner-report'; const old = document.getElementById('pc-banner-report'); if (old) old.remove(); rb.insertBefore(c, rb.firstChild); }
+}
+
 async function boot(){
   configureRole(); updateWhoChip();
-  if (!AUTH.token){ showScreen('login'); return; }
-  if (!IS_STUDENT){ baseUnlockForRole(); showScreen('assess'); return; }
+  if (!AUTH.token){ showScreen('login'); pcMaybeRun(); return; }
+  if (!IS_STUDENT){ baseUnlockForRole(); showScreen('assess'); pcMaybeRun(); return; }
   try {
     loading(true, 'Welcome back — loading your work…');
     const out = await api({ action:'me' });
@@ -1840,9 +1915,11 @@ async function submit(){
     activeLevel = current.data.defaultLevel;
     renderAll();
     showScreen('report');
+    if (typeof pcReturn === 'function') pcReturn(name, essay);
   } catch(err){
     clearInterval(ticker); loading(false);
     showErr('Analysis failed: ' + err.message);
+    if (PC.item && !PC.sent && PC.started) pcBanner('<b>Analysis failed</b> for ' + esc(PC.item.respondentId) + ': ' + esc(err.message) + ' The form is still filled in — press <b>Submit for analysis</b> to try again; the result will still go back to the Staff Room.', 'err');
   }
 }
 
